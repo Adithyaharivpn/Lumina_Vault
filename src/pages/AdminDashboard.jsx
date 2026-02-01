@@ -53,8 +53,6 @@ export default function AdminDashboard() {
   // Timer Logic
   useEffect(() => {
     const calculateTime = () => {
-      // Use first team as reference, or better - query DB periodically?
-      // Since teams are loaded via subscription, we can use `teams[0]`.
       if (teams.length === 0 || !teams[0].start_time) return;
 
       const referenceTeam = teams[0];
@@ -78,7 +76,7 @@ export default function AdminDashboard() {
     calculateTime();
     const timer = setInterval(calculateTime, 1000);
     return () => clearInterval(timer);
-  }, [teams]); // Dependencies: teams update via realtime subscription
+  }, [teams]);
 
   // Calculate Online Count
   const onlineCount = teams.filter((t) => {
@@ -104,10 +102,10 @@ export default function AdminDashboard() {
 
   // Fetch initial data & Subs
   useEffect(() => {
-    if (!isAdmin) return; // Don't fetch if not logged in
+    if (!isAdmin) return;
 
     fetchTeams();
-    fetchLogs(); // Load history
+    fetchLogs();
 
     const newChannel = supabase
       .channel("game_room")
@@ -115,7 +113,7 @@ export default function AdminDashboard() {
         "postgres_changes",
         { event: "*", schema: "public", table: "teams" },
         (payload) => {
-          fetchTeams(); // Refresh table on any update
+          fetchTeams();
           if (
             payload.eventType === "UPDATE" &&
             payload.new.score > payload.old.score
@@ -130,7 +128,6 @@ export default function AdminDashboard() {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "system_logs" },
         (payload) => {
-          // Realtime Log Update
           setSystemLog((prev) => [
             `[${new Date(payload.new.created_at).toLocaleTimeString("en-US", { hour12: false })}] ${payload.new.message}`,
             ...prev,
@@ -138,11 +135,10 @@ export default function AdminDashboard() {
         },
       )
       .on("broadcast", { event: "system_alert" }, (event) => {
-        console.log("RECEIVED EXT ALERT:", event); // Debug
+        console.log("RECEIVED EXT ALERT:", event);
         if (event.payload && event.payload.message) {
           const msg = event.payload.message;
           addLog(msg);
-          // Show High Priority Toast
           toast.error(msg, {
             duration: 8000,
             className:
@@ -161,7 +157,7 @@ export default function AdminDashboard() {
     return () => {
       supabase.removeChannel(newChannel);
     };
-  }, [isAdmin]); // Add isAdmin dependency
+  }, [isAdmin]);
 
   const fetchTeams = async () => {
     const { data } = await supabase
@@ -190,17 +186,14 @@ export default function AdminDashboard() {
   };
 
   const addLog = async (msg) => {
-    // Log to DB
     await supabase.from("system_logs").insert({
       message: msg,
       type: "info",
     });
-    // Note: We don't update state here, we wait for the Realtime 'INSERT' event to do it to ensure sync
   };
 
   const handleAuth = (e) => {
     e.preventDefault();
-    // Simple hardcoded check
     if (authInput === "admin" || authInput === "override") {
       sessionStorage.setItem("admin_authenticated", "true");
       setIsAdmin(true);
@@ -214,7 +207,6 @@ export default function AdminDashboard() {
   const handleBroadcast = async () => {
     if (!broadcastMsg.trim() || !channel) return;
 
-    // Send broadcast event via existing channel
     const status = await channel.send({
       type: "broadcast",
       event: "system_alert",
@@ -230,7 +222,6 @@ export default function AdminDashboard() {
   };
 
   const handleStartTimer = async () => {
-    // Set start_time to NOW and duration for ALL teams
     const now = new Date().toISOString();
     const { error } = await supabase
       .from("teams")
@@ -238,29 +229,27 @@ export default function AdminDashboard() {
         start_time: now,
         duration_minutes: gameDuration,
       })
-      .neq("id", "00000000-0000-0000-0000-000000000000"); // Update all
+      .neq("id", "00000000-0000-0000-0000-000000000000");
 
     if (!error) {
       addLog(`GAME STARTED: ${gameDuration} MIN TIMER ACTIVATED.`);
-      // Broadcast logic could be added here if needed, but DB update should trigger clients
     } else {
       addLog(`TIMER ERROR: ${error.message}`);
     }
   };
 
   const handleTimerReset = async () => {
-    // Reset start_time and paused_at to NULL for ALL teams (pushes them back to waiting screen)
     const { error } = await supabase
       .from("teams")
       .update({
         start_time: null,
         paused_at: null,
       })
-      .neq("id", "00000000-0000-0000-0000-000000000000"); // Update all
+      .neq("id", "00000000-0000-0000-0000-000000000000"); 
 
     if (!error) {
       addLog("TIMER RESET: GAME MOVED TO STANDBY PHASE.");
-      setTimeLeft(gameDuration * 60); // Reset local display
+      setTimeLeft(gameDuration * 60); 
     } else {
       addLog(`TIMER RESET ERROR: ${error.message}`);
     }
@@ -272,7 +261,6 @@ export default function AdminDashboard() {
     const now = new Date().toISOString();
 
     if (newState) {
-      // PAUSE: Set paused_at = NOW for all
       await supabase
         .from("teams")
         .update({ paused_at: now })
@@ -280,14 +268,11 @@ export default function AdminDashboard() {
 
       addLog("SYSTEM PAUSED (Server-Side)");
     } else {
-      // RESUME: Adjust start_time to account for pause duration
-      // 1. Fetch all teams to get their specific pause times
       const { data: allTeams } = await supabase
         .from("teams")
         .select("id, start_time, paused_at");
 
       if (allTeams) {
-        // 2. Prepare updates
         const updates = allTeams
           .map((t) => {
             if (!t.paused_at) return null;
@@ -306,8 +291,6 @@ export default function AdminDashboard() {
             };
           })
           .filter(Boolean);
-
-        // 3. Execute updates (Iterative for now, simpler than batched RPC)
         for (const update of updates) {
           await supabase.from("teams").update(update).eq("id", update.id);
         }
@@ -337,7 +320,6 @@ export default function AdminDashboard() {
   };
 
   const handleNukeReset = async () => {
-    // Reset all teams to Node 1, Score 0
     const { error } = await supabase
       .from("teams")
       .update({
@@ -346,11 +328,11 @@ export default function AdminDashboard() {
         is_finished: false,
         last_solved_at: null,
       })
-      .neq("id", "00000000-0000-0000-0000-000000000000"); // Valid UUID format placeholder
+      .neq("id", "00000000-0000-0000-0000-000000000000");
 
     if (!error) {
       addLog("WARNING: GLOBAL RESET EXECUTED. ALL TEAMS REVERTED TO NODE 01.");
-      setIsNukeOpen(false); // Close dialog automaticallly
+      setIsNukeOpen(false);
       fetchTeams();
     } else {
       addLog(`RESET FAILED: ${error.message}`);
@@ -430,7 +412,6 @@ export default function AdminDashboard() {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Team Monitor */}
         <div className="lg:col-span-2 space-y-6">
           <div className="border border-amber-900/30 bg-black/40 rounded p-4">
             <h2 className="text-sm font-bold mb-4 flex items-center gap-2 text-amber-400">
@@ -487,7 +468,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Right Column: Controls & Log */}
         <div className="space-y-6">
           {/* Controls */}
           <div className="border border-amber-900/30 bg-black/40 rounded p-4 space-y-4">

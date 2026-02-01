@@ -9,19 +9,16 @@ export default function SpectatorDashboard() {
   const [timeLeft, setTimeLeft] = useState(3600);
   const [nodes, setNodes] = useState([]);
   const [nodesCount, setNodesCount] = useState(5);
-  const [breachAlert, setBreachAlert] = useState(null); // { teamName, nodeName }
+  const [breachAlert, setBreachAlert] = useState(null);
   const [winner, setWinner] = useState(null);
   const teamsRef = useRef([]);
 
-  // Sync Ref
   useEffect(() => {
     teamsRef.current = teams;
   }, [teams]);
 
-  // 1. Initial Data Load
   useEffect(() => {
     const init = async () => {
-      // Fetch Nodes
       const { data: nodesData } = await supabase
         .from("nodes")
         .select("*")
@@ -31,8 +28,6 @@ export default function SpectatorDashboard() {
         setNodes(nodesData);
         setNodesCount(nodesData.length);
       }
-
-      // Fetch Initial Teams
       const { data } = await supabase.from("teams").select("*");
       if (data) {
         setTeams(data);
@@ -43,15 +38,13 @@ export default function SpectatorDashboard() {
             type: "system",
           },
         ]);
-
-        // Check for existing winner
         const existingWinner = data.find((t) => t.is_finished);
         if (existingWinner) setWinner(existingWinner);
       }
     };
     init();
 
-    // 2. Realtime Subscription
+    //Realtime Subscription
     const channel = supabase
       .channel("game_room")
       .on(
@@ -82,22 +75,16 @@ export default function SpectatorDashboard() {
     };
   }, []);
 
-  // 3. Logic & Event Handling
+  //Logic & Event Handling
   const handleTeamUpdate = (newTeam, oldTeam) => {
     setTeams((prev) => prev.map((t) => (t.id === newTeam.id ? newTeam : t)));
-
-    // Detect Advancement
     if (oldTeam && newTeam.current_node > oldTeam.current_node) {
       const nodeName =
         nodes[newTeam.current_node - 1]?.name || `NODE ${newTeam.current_node}`;
-
-      // Trigger Breach Alert
       setBreachAlert({
         teamName: newTeam.team_name,
         nodeName: nodeName,
       });
-
-      // Clear alert after 3s
       setTimeout(() => setBreachAlert(null), 3000);
 
       addLog(
@@ -105,7 +92,6 @@ export default function SpectatorDashboard() {
         "success",
       );
     }
-    // Detect Win
     else if (oldTeam && newTeam.is_finished && !oldTeam.is_finished) {
       setWinner(newTeam);
       addLog(`MISSION ACCOMPLISHED: ${newTeam.team_name}`, "win");
@@ -117,7 +103,7 @@ export default function SpectatorDashboard() {
     setLogs((prev) => [{ msg, time, type }, ...prev].slice(0, 10));
   };
 
-  // 4. Timer Sync
+  //Timer Sync
   const isPaused = teams.length > 0 && !!teams[0]?.paused_at;
 
   useEffect(() => {
@@ -153,7 +139,6 @@ export default function SpectatorDashboard() {
     return `${h}:${m}:${s}`;
   };
 
-  // 5. Computed Stats for "Live Mission Stats"
   const stats = useMemo(() => {
     const totalBreaches = teams.reduce(
       (acc, t) => acc + (t.current_node || 0),
@@ -161,10 +146,9 @@ export default function SpectatorDashboard() {
     );
     const sortedTeams = [...teams].sort(
       (a, b) => b.score - a.score || b.current_node - a.current_node,
-    ); // Fix: Higher node = better rank
+    );
     const leader = sortedTeams[0];
 
-    // Calculate Leader Position (Progress)
     let leaderProgress = 0;
     if (leader) {
       if (leader.is_finished) {
@@ -182,13 +166,11 @@ export default function SpectatorDashboard() {
     };
   }, [teams, nodesCount]);
 
-  // 6. Staggering Logic for Blips
   const getDisplayNode = (team) => {
     if (team.is_finished) return nodesCount;
     return Math.max(0, (team.current_node || 1) - 1);
   };
 
-  // Group teams by DISPLAY node index
   const teamsByNode = useMemo(() => {
     const map = {};
     teams.forEach((t) => {
@@ -196,9 +178,8 @@ export default function SpectatorDashboard() {
       if (!map[node]) map[node] = [];
       map[node].push(t);
     });
-    // Sort each group by id or name to ensure stable order
     Object.keys(map).forEach((k) => {
-      map[k].sort((a, b) => a.id.localeCompare(b.id)); // Stable sort
+      map[k].sort((a, b) => a.id.localeCompare(b.id));
     });
     return map;
   }, [teams, nodesCount]);
@@ -207,15 +188,12 @@ export default function SpectatorDashboard() {
     const node = getDisplayNode(team);
     const group = teamsByNode[node] || [];
     const index = group.findIndex((t) => t.id === team.id);
-
-    // Vertical stagger base offset (e.g. -25px per index)
     const yOffset = -(index * 25);
     return { y: yOffset };
   };
 
   return (
     <div className="min-h-screen bg-black text-green-500 font-mono overflow-hidden relative selection:bg-green-900/40">
-      {/* GLOBAL SCANLINE ANIMATION */}
       <div
         className="absolute inset-0 pointer-events-none z-50 mix-blend-overlay opacity-30 animate-[scan_4s_linear_infinite]"
         style={{
@@ -224,15 +202,9 @@ export default function SpectatorDashboard() {
           backgroundSize: "100% 10px",
         }}
       />
-
-      {/* CRT GRAIN */}
       <div className="absolute inset-0 pointer-events-none z-40 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-hard-light" />
-
-      {/* Background Effects */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(0,50,0,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,50,0,0.1)_1px,transparent_1px)] bg-size-[40px_40px] pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)] opacity-80 pointer-events-none" />
-
-      {/* WINNER CONFETTI / GLITCH OVERLAY */}
       <AnimatePresence>
         {winner && (
           <motion.div
@@ -262,8 +234,6 @@ export default function SpectatorDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* BREACH ALERT OVERLAY */}
       <AnimatePresence>
         {breachAlert && (
           <motion.div
@@ -327,9 +297,7 @@ export default function SpectatorDashboard() {
 
       {/* Main Content */}
       <main className="absolute inset-0 flex flex-col pt-40 pb-10 px-10 z-0">
-        {/* Track Visualization */}
         <div className="flex-1 relative flex items-center justify-center">
-          {/* The Track Line */}
           <div className="w-full h-1 bg-green-900/30 relative">
             <div className="absolute top-0 left-0 h-full bg-green-500/20 w-full animate-pulse" />
 
@@ -348,15 +316,11 @@ export default function SpectatorDashboard() {
                 </div>
               </div>
             ))}
-
-            {/* Team Blips Wrapper - Render outside of map to allow AnimatePresence if needed, but here simple map is fine as teams persist */}
             {teams.map((team) => {
               const displayNode = getDisplayNode(team);
               const percent = (displayNode / nodesCount) * 100;
               const clampedPercent = Math.min(100, Math.max(0, percent));
               const { y } = getTeamOffset(team);
-
-              // Calculate Rank on the fly
               const rank =
                 [...teams]
                   .sort(
@@ -369,27 +333,23 @@ export default function SpectatorDashboard() {
               return (
                 <motion.div
                   key={team.id}
-                  layout // Framer motion layout animation
+                  layout
                   initial={{ left: "0%" }}
                   animate={{ left: `${clampedPercent}%`, y: y }}
-                  transition={{ type: "spring", stiffness: 50, damping: 20 }} // Smooth physics slide
+                  transition={{ type: "spring", stiffness: 50, damping: 20 }} 
                   className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 group hover:z-50"
-                  style={{ y: y }} // Fallback for initial render
+                  style={{ y: y }} 
                 >
-                  {/* Blip */}
                   <div className="w-4 h-4 rounded-full bg-white shadow-[0_0_15px_#fff] relative cursor-pointer hover:scale-125 transition-transform flex items-center justify-center">
                     <div className="absolute inset-0 bg-green-400 rounded-full opacity-50 animate-ping" />
-                    {/* Small dot for exact center */}
                     <div className="w-1 h-1 bg-black rounded-full z-10" />
                   </div>
 
-                  {/* Tag */}
                   <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold text-green-400 bg-black/80 px-2 py-1 border border-green-900/50 rounded whitespace-nowrap shadow-lg flex flex-col items-center z-50">
                     <span>
                       <span className="text-yellow-500 mr-1">[#{rank}]</span>
                       {team.team_name}
                     </span>
-                    {/* Triangle pointer */}
                     <div className="w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-b-4 border-b-green-900/50 absolute -top-1" />
                   </div>
                 </motion.div>
@@ -398,9 +358,7 @@ export default function SpectatorDashboard() {
           </div>
         </div>
 
-        {/* Bottom Grid / Logs - Glassmorphism applied */}
         <div className="h-56 grid grid-cols-3 gap-6">
-          {/* Leaderboard */}
           <div className="col-span-1 border border-green-900/30 p-6 rounded-2xl bg-black/40 backdrop-blur-md shadow-[0_0_20px_rgba(0,50,0,0.3)] overflow-hidden flex flex-col">
             <h3 className="text-xs font-bold text-green-500 tracking-widest mb-4 flex items-center gap-2 uppercase opacity-80">
               <Trophy className="w-4 h-4 text-yellow-500" /> Squadron
@@ -442,7 +400,7 @@ export default function SpectatorDashboard() {
             </div>
           </div>
 
-          {/* Live Mission Stats (New) */}
+          {/* Live Mission Stats*/}
           <div className="col-span-1 border border-green-900/30 p-6 rounded-2xl bg-black/40 backdrop-blur-md shadow-[0_0_20px_rgba(0,50,0,0.3)] flex flex-col justify-between relative overflow-hidden group">
             {/* Decor elements */}
             <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-40 transition-opacity">

@@ -30,21 +30,18 @@ export default function Login() {
     setLoading(true);
     setError("");
 
-    // Check if team exists with correct code
     const { data, error } = await supabase
       .from("teams")
       .select("*")
-      .ilike("team_name", unitId) // Case-insensitive name match
-      .eq("access_code", accessCode) // Exact code match
+      .ilike("team_name", unitId)
+      .eq("access_code", accessCode)
       .maybeSingle();
 
     if (data) {
-      // Success: Save Identity & Redirect
       localStorage.setItem("team_id", data.id);
       localStorage.setItem("team_name", data.team_name);
       navigate("/user");
     } else {
-      // Fail
       setError("ACCESS DENIED: INVALID UNIT_ID OR CODE.");
       setLoading(false);
     }
@@ -55,8 +52,7 @@ export default function Login() {
       <div className="crt-effect" />
 
       <div className="max-w-md w-full space-y-8">
-        {/* Logo / Header */}
-        <div className="text-center space-y-2">
+          <div className="text-center space-y-2">
           <div className="inline-block p-4 border border-green-500/30 rounded-full bg-green-950/20 mb-4 animate-pulse">
             <Terminal className="w-12 h-12 text-green-400" />
           </div>

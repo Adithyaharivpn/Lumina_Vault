@@ -32,15 +32,13 @@ export default function UserDashboard() {
   const [overrideProgress, setOverrideProgress] = useState(0);
   const [terminalInput, setTerminalInput] = useState("");
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
-
-  // Data States
   const [team, setTeam] = useState(null);
   const [nodes, setNodes] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [alertMsg, setAlertMsg] = useState("");
-  // Presence Heartbeat
+ 
   useEffect(() => {
     if (!team?.id) return;
     const updatePresence = async () => {
@@ -49,24 +47,21 @@ export default function UserDashboard() {
         .update({ last_seen_at: new Date().toISOString() })
         .eq("id", team.id);
     };
-    updatePresence(); // Immediate
-    const interval = setInterval(updatePresence, 30000); // Every 30s
+    updatePresence(); 
+    const interval = setInterval(updatePresence, 30000); 
     return () => clearInterval(interval);
   }, [team?.id]);
 
-  // 1. Initialize & Fetch Data
   useEffect(() => {
     const initGame = async () => {
       const storedTeamId = localStorage.getItem("team_id");
 
-      // Only check if it exists and isn't the literal string "undefined"
       if (!storedTeamId || storedTeamId === "undefined") {
         localStorage.clear();
         navigate("/login");
         return;
       }
 
-      // Fetch initial data
       await Promise.all([
         fetchTeamData(storedTeamId),
         fetchNodes(),
@@ -139,7 +134,7 @@ export default function UserDashboard() {
     if (data) setLeaderboard(data);
   };
 
-  // Timer & Effects
+  //Timer 
   useEffect(() => {
     const calculateTime = () => {
       if (!team?.start_time) return;
@@ -147,15 +142,12 @@ export default function UserDashboard() {
       const startTime = new Date(team.start_time).getTime();
       const durationSeconds = (team.duration_minutes || 60) * 60;
 
-      // Check if server is paused (paused_at is present)
       if (team.paused_at) {
-        // FROZEN: Time elapsed is (paused_at - start_time)
         const pauseTime = new Date(team.paused_at).getTime();
         const elapsed = Math.floor((pauseTime - startTime) / 1000);
         const remaining = Math.max(0, durationSeconds - elapsed);
         setTimeLeft(remaining);
       } else {
-        // RUNNING: Time elapsed is (now - start_time)
         const now = new Date().getTime();
         const elapsed = Math.floor((now - startTime) / 1000);
         const remaining = Math.max(0, durationSeconds - elapsed);
@@ -166,7 +158,7 @@ export default function UserDashboard() {
     calculateTime();
     const timer = setInterval(calculateTime, 1000);
     return () => clearInterval(timer);
-  }, [team]); // Re-run when team updates
+  }, [team]); 
 
   useEffect(() => {
     const sig = setInterval(
@@ -187,7 +179,7 @@ export default function UserDashboard() {
     return `${h}:${m}:${s}`;
   };
 
-  // Game Logic
+  //Game Logic
   const handleTerminalSubmit = async (e) => {
     e.preventDefault();
     if (!team || terminalInput.trim() === "" || overrideProgress > 0) return;
@@ -205,7 +197,6 @@ export default function UserDashboard() {
       `Attempting Override - Input: "${terminalInput}" | Target: "${currentNode.correct_key}" | NodeID: ${currentNode.id}`,
     );
 
-    // Safe comparison
     if (
       currentNode.correct_key &&
       terminalInput.trim().toUpperCase() ===
@@ -249,7 +240,6 @@ export default function UserDashboard() {
     return "locked";
   };
 
-  // Calculate Global Progress based on Current Node (assuming 5 total levels or dynamic)
   const totalLevels = nodes.length || 5;
   const currentLevel = team?.is_finished
     ? totalLevels
@@ -263,7 +253,6 @@ export default function UserDashboard() {
       </div>
     );
 
-  // WAITING SCREEN CHECK
   if (team && !team.start_time) {
     return <WaitingScreen />;
   }
@@ -324,7 +313,6 @@ export default function UserDashboard() {
               className={`absolute inset-x-0 bottom-0 w-full transition-all duration-1000 ease-out bg-green-500/20`}
               style={{ height: `${globalProgress}%` }}
             />
-            {/* Override Effect Layer */}
             <div
               className={`absolute inset-x-0 bottom-0 w-full transition-all duration-200 ease-out bg-green-500 mix-blend-overlay`}
               style={{
@@ -345,7 +333,6 @@ export default function UserDashboard() {
 
           {/* Nodes Grid */}
           <div className="flex-1 space-y-3 overflow-y-auto pr-1 scrollbar-hide">
-            {/* If no nodes loaded yet, show skeleton or empty */}
             {nodes.length === 0 && (
               <div className="text-xs text-green-900">
                 Scanning network topology...

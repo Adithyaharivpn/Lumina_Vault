@@ -4,11 +4,9 @@ import { Loader2, Radio, ShieldAlert } from "lucide-react";
 export default function WaitingScreen() {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center text-green-500 font-mono p-4 relative overflow-hidden">
-      {/* Background Effects */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(0,50,0,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,50,0,0.1)_1px,transparent_1px)] bg-size-[40px_40px] pointer-events-none opacity-20" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)] opacity-80 pointer-events-none" />
 
-      {/* Scanline */}
       <div
         className="absolute inset-0 pointer-events-none z-50 mix-blend-overlay opacity-10 animate-[scan_4s_linear_infinite]"
         style={{
@@ -18,7 +16,6 @@ export default function WaitingScreen() {
         }}
       />
 
-      {/* Content */}
       <div className="z-10 flex flex-col items-center text-center space-y-8 max-w-md w-full border border-green-900/30 p-8 rounded-lg bg-black/50 backdrop-blur-md shadow-[0_0_30px_rgba(0,50,0,0.3)]">
         <div className="relative">
           <div className="absolute inset-0 bg-green-500/20 blur-xl rounded-full animate-pulse" />

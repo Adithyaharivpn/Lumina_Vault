@@ -41,21 +41,15 @@ export default function VolunteerDashboard() {
   const [passwordInput, setPasswordInput] = useState("");
   const [authError, setAuthError] = useState("");
 
-  // State
+
   const [nodes, setNodes] = useState([]);
   const [teams, setTeams] = useState([]);
-  const [selectedNode, setSelectedNode] = useState("1"); // Default to Node 1
+  const [selectedNode, setSelectedNode] = useState("1");
   const [loading, setLoading] = useState(true);
-
-  // Actions State
   const [selectedTeamForAdvance, setSelectedTeamForAdvance] = useState(null);
   const [isAdvanceDialogOpen, setIsAdvanceDialogOpen] = useState(false);
   const [callSent, setCallSent] = useState(false);
-
-  // Channel
   const [channel, setChannel] = useState(null);
-
-  // Timer State
   const [timeLeft, setTimeLeft] = useState(3600);
 
   const handleAuth = (e) => {
@@ -69,9 +63,8 @@ export default function VolunteerDashboard() {
     }
   };
 
-  // 1. Init Data & Subscription
   useEffect(() => {
-    if (!isAuthorized) return; // Add check to not run data fetching if not authorized
+    if (!isAuthorized) return;
 
     fetchNodes();
     fetchTeams();
@@ -82,7 +75,7 @@ export default function VolunteerDashboard() {
         "postgres_changes",
         { event: "*", schema: "public", table: "teams" },
         () => {
-          fetchTeams(); // Refresh on any team update
+          fetchTeams();
         },
       )
       .subscribe();
@@ -92,21 +85,19 @@ export default function VolunteerDashboard() {
     return () => {
       supabase.removeChannel(newChannel);
     };
-  }, [isAuthorized]); // Add dependency
+  }, [isAuthorized]);
 
-  // Timer Logic (Synced with first available team or global)
+  // Timer Logic
   useEffect(() => {
     if (!isAuthorized) return;
 
     const calculateTime = () => {
-      // Use the first team as the "Master Clock" reference since all are synced
       if (teams.length === 0 || !teams[0].start_time) return;
 
       const referenceTeam = teams[0];
       const startTime = new Date(referenceTeam.start_time).getTime();
       const durationSeconds = (referenceTeam.duration_minutes || 60) * 60;
 
-      // Check if paused
       if (referenceTeam.paused_at) {
         const pauseTime = new Date(referenceTeam.paused_at).getTime();
         const elapsed = Math.floor((pauseTime - startTime) / 1000);
@@ -153,13 +144,10 @@ export default function VolunteerDashboard() {
     }
   };
 
-  // 3. Computed
-  // Filter teams currently at the selected node
   const activeTeams = teams.filter(
     (t) => t.current_node === Number(selectedNode) && !t.is_finished,
   );
 
-  // 4. Actions
   const handleManualAdvance = async () => {
     if (!selectedTeamForAdvance) return;
 
@@ -179,7 +167,6 @@ export default function VolunteerDashboard() {
       .eq("id", selectedTeamForAdvance.id);
 
     if (!error) {
-      // Log the action
       if (channel) {
         channel.send({
           type: "broadcast",
@@ -299,7 +286,6 @@ export default function VolunteerDashboard() {
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Col: Controls & Stats */}
         <div className="space-y-6">
           <Card className="bg-blue-950/10 border-blue-900/50">
             <CardHeader>
