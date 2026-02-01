@@ -290,7 +290,7 @@ export default function UserDashboard() {
         <div className="max-w-md w-full space-y-8 relative z-20">
           <div className="h-2 w-full bg-green-900/30 rounded-full overflow-hidden border border-green-900/50">
             <div
-              className="h-full bg-green-500 shadow-[0_0_15px_#22c55e] transition-all duration-[2400ms] ease-out"
+              className="h-full bg-green-500 shadow-[0_0_15px_#22c55e] transition-all duration-2400 ease-out"
               style={{ width: `${bootProgress}%` }}
             />
           </div>
