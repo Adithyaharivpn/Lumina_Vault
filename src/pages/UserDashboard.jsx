@@ -9,6 +9,7 @@ import {
   Trophy,
   Users,
   LogOut,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,7 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [alertMsg, setAlertMsg] = useState("");
- 
+
   useEffect(() => {
     if (!team?.id) return;
     const updatePresence = async () => {
@@ -47,8 +48,8 @@ export default function UserDashboard() {
         .update({ last_seen_at: new Date().toISOString() })
         .eq("id", team.id);
     };
-    updatePresence(); 
-    const interval = setInterval(updatePresence, 30000); 
+    updatePresence();
+    const interval = setInterval(updatePresence, 30000);
     return () => clearInterval(interval);
   }, [team?.id]);
 
@@ -134,7 +135,7 @@ export default function UserDashboard() {
     if (data) setLeaderboard(data);
   };
 
-  //Timer 
+  //Timer
   useEffect(() => {
     const calculateTime = () => {
       if (!team?.start_time) return;
@@ -158,7 +159,7 @@ export default function UserDashboard() {
     calculateTime();
     const timer = setInterval(calculateTime, 1000);
     return () => clearInterval(timer);
-  }, [team]); 
+  }, [team]);
 
   useEffect(() => {
     const sig = setInterval(
@@ -246,15 +247,92 @@ export default function UserDashboard() {
     : (team?.current_node || 1) - 1;
   const globalProgress = Math.round((currentLevel / totalLevels) * 100);
 
+  const [showBoot, setShowBoot] = useState(false);
+  const [bootProgress, setBootProgress] = useState(0);
+
+  useEffect(() => {
+    if (team?.start_time) {
+      setShowBoot(true);
+      setBootProgress(0);
+
+      // Start progress animation
+      const progressTimer = setTimeout(() => setBootProgress(100), 100);
+
+      // End boot sequence
+      const timer = setTimeout(() => setShowBoot(false), 2500);
+
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(progressTimer);
+      };
+    }
+  }, [team?.start_time]);
+
   if (loading)
     return (
-      <div className="bg-black min-h-screen text-green-500 font-mono p-10">
-        INITIALIZING UPLINK...
+      <div className="bg-black min-h-screen text-green-500 font-mono flex flex-col items-center justify-center p-10">
+        <Loader2 className="w-12 h-12 animate-spin mb-4" />
+        <span className="animate-pulse tracking-widest">CONNECTING...</span>
       </div>
     );
 
   if (team && !team.start_time) {
     return <WaitingScreen />;
+  }
+
+  if (showBoot) {
+    return (
+      <div className="min-h-screen bg-black text-green-500 font-mono flex flex-col items-center justify-center p-6 z-50 fixed inset-0 overflow-hidden">
+        {/* CRT Overlay */}
+        <div className="absolute inset-0 z-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-size-[100%_4px,3px_100%] bg-repeat pointer-events-none" />
+        <div className="absolute inset-0 pointer-events-none z-10 bg-[radial-gradient(circle,rgba(0,0,0,0)_0%,rgba(0,0,0,0.4)_100%)]" />
+
+        <div className="max-w-md w-full space-y-8 relative z-20">
+          <div className="h-2 w-full bg-green-900/30 rounded-full overflow-hidden border border-green-900/50">
+            <div
+              className="h-full bg-green-500 shadow-[0_0_15px_#22c55e] transition-all duration-[2400ms] ease-out"
+              style={{ width: `${bootProgress}%` }}
+            />
+          </div>
+
+          <div className="space-y-2 font-mono text-xs text-green-400/80">
+            <div className="flex justify-between items-center text-green-600">
+              <span>KERNEL_PANIC_PROTECTION...</span>
+              <span>ACTIVE</span>
+            </div>
+            <div className="h-px w-full bg-green-900/20 my-2" />
+            <div className="flex justify-between">
+              <span>{">"} ESTABLISHING SECURE HANDSHAKE</span>
+              <span className="text-green-400 font-bold">OK</span>
+            </div>
+            <div className="flex justify-between opacity-0 animate-[fadeIn_0.5s_ease-out_0.5s_forwards]">
+              <span>{">"} VERIFYING ENCRYPTION KEYS</span>
+              <span className="text-green-400 font-bold">OK</span>
+            </div>
+            <div className="flex justify-between opacity-0 animate-[fadeIn_0.5s_ease-out_1s_forwards]">
+              <span>{">"} LOADING MISSION PARAMETERS</span>
+              <span className="text-green-400 font-bold">LOADED</span>
+            </div>
+            <div className="flex justify-between opacity-0 animate-[fadeIn_0.5s_ease-out_1.5s_forwards]">
+              <span>{">"} INITIALIZING INTERFACE...</span>
+              <span className="animate-pulse bg-green-500 h-2 w-2 block rounded-none" />
+            </div>
+          </div>
+
+          <div className="relative pt-8 text-center">
+            <h1
+              className="text-5xl font-black tracking-tighter translate-y-4 opacity-0 animate-[slideUp_0.3s_ease-out_2s_forwards] glitch relative inline-block text-white"
+              data-text="ACCESS_GRANTED"
+            >
+              ACCESS<span className="text-green-500">_GRANTED</span>
+            </h1>
+            <p className="text-[10px] text-green-600 mt-2 opacity-0 animate-[fadeIn_0.5s_ease-out_2.2s_forwards] uppercase tracking-[0.3em]">
+              Welcome back, Operative
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

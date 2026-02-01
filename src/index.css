@@ -89,67 +89,67 @@
 
 @keyframes flicker {
   0% {
-    opacity: 0.9;
+    opacity: 0.97;
   }
   5% {
-    opacity: 0.85;
+    opacity: 0.95;
   }
   10% {
-    opacity: 0.95;
+    opacity: 0.9;
   }
   15% {
-    opacity: 0.9;
+    opacity: 0.95;
   }
   20% {
-    opacity: 0.8;
+    opacity: 0.99;
   }
   25% {
-    opacity: 0.9;
+    opacity: 0.95;
   }
   30% {
-    opacity: 0.95;
+    opacity: 0.9;
   }
   35% {
-    opacity: 0.85;
+    opacity: 0.96;
   }
   40% {
-    opacity: 0.9;
+    opacity: 0.98;
   }
   45% {
-    opacity: 0.85;
+    opacity: 0.95;
   }
   50% {
-    opacity: 0.95;
+    opacity: 0.99;
   }
   55% {
-    opacity: 0.9;
+    opacity: 0.93;
   }
   60% {
-    opacity: 0.85;
+    opacity: 0.9;
   }
   65% {
-    opacity: 0.9;
+    opacity: 0.96;
   }
   70% {
-    opacity: 0.95;
+    opacity: 1;
   }
   75% {
-    opacity: 0.9;
+    opacity: 0.97;
   }
   80% {
-    opacity: 0.85;
-  }
-  85% {
-    opacity: 0.9;
-  }
-  90% {
-    opacity: 0.85;
-  }
-  95% {
     opacity: 0.95;
   }
+  85% {
+    opacity: 0.92;
+  }
+  90% {
+    opacity: 0.96;
+  }
+  95% {
+    opacity: 1;
+  }
   100% {
-    opacity: 0.9;
+    opacity: 0.98;
   }
 }
 
@@ -173,7 +173,7 @@
   pointer-events: none;
   z-index: 40;
   animation: flicker 0.15s infinite;
-  opacity: 0.15;
+  opacity: 0.3; /* Increased opacity for more visible effect */
 }
 
 .glitch {
@@ -192,57 +192,69 @@
 
 .glitch::before {
   left: 2px;
-  text-shadow: -1px 0 #ff00c1;
+  text-shadow: -2px 0 #ff00c1;
   clip: rect(44px, 450px, 56px, 0);
-  animation: glitch-anim 5s infinite linear alternate-reverse;
+  animation: glitch-anim 1s infinite linear alternate-reverse; /* Faster */
 }
 
 .glitch::after {
   left: -2px;
-  text-shadow: -1px 0 #00fff9;
+  text-shadow: -2px 0 #00fff9;
   clip: rect(44px, 450px, 56px, 0);
-  animation: glitch-anim2 5s infinite linear alternate-reverse;
+  animation: glitch-anim2 1s infinite linear alternate-reverse; /* Faster */
 }
 
 @keyframes glitch-anim {
   0% {
     clip: rect(10px, 9999px, 30px, 0);
+    transform: skew(0.5deg);
   }
   20% {
     clip: rect(80px, 9999px, 100px, 0);
+    transform: skew(-0.5deg);
   }
   40% {
     clip: rect(20px, 9999px, 60px, 0);
+    transform: skew(0.5deg);
   }
   60% {
     clip: rect(50px, 9999px, 90px, 0);
+    transform: skew(-0.5deg);
   }
   80% {
     clip: rect(10px, 9999px, 30px, 0);
+    transform: skew(0.5deg);
   }
   100% {
     clip: rect(70px, 9999px, 110px, 0);
+    transform: skew(-0.5deg);
   }
 }
 
 @keyframes glitch-anim2 {
   0% {
     clip: rect(50px, 9999px, 90px, 0);
+    transform: skew(-0.5deg);
   }
   20% {
     clip: rect(10px, 9999px, 30px, 0);
+    transform: skew(0.5deg);
   }
   40% {
     clip: rect(60px, 9999px, 100px, 0);
+    transform: skew(-0.5deg);
   }
   60% {
     clip: rect(20px, 9999px, 60px, 0);
+    transform: skew(0.5deg);
   }
   80% {
     clip: rect(70px, 9999px, 110px, 0);
+    transform: skew(-0.5deg);
   }
   100% {
     clip: rect(10px, 9999px, 30px, 0);
+    transform: skew(0.5deg);
   }
 }
 
