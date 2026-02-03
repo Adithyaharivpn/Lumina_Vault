@@ -10,7 +10,10 @@ import {
   Users,
   LogOut,
   Loader2,
+  QrCode,
+  X,
 } from "lucide-react";
+import { Html5QrcodeScanner } from "html5-qrcode";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +25,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { toast } from "sonner";
 
 import { supabase } from "@/lib/supabaseClient";
 import WaitingScreen from "./WaitingScreen";
@@ -39,6 +43,9 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [alertMsg, setAlertMsg] = useState("");
+  const [missionAlert, setMissionAlert] = useState(null);
+  const [showScanner, setShowScanner] = useState(false);
+  const [scanResult, setScanResult] = useState(null);
 
   useEffect(() => {
     if (!team?.id) return;
@@ -180,6 +187,59 @@ export default function UserDashboard() {
     return `${h}:${m}:${s}`;
   };
 
+  // Mission Messages
+  const getSuccessMessage = (nodeId) => {
+    switch (nodeId) {
+      case 1:
+        return "UPLINK STABLE. Primary Coordinate acquired: [50]. Proceed to Cyber Security Lab for Round 2: Breach Defense.";
+      case 2:
+        return "THREATS NEUTRALIZED. Access Map granted. Locate the physical marker in the restricted zone to find the Secondary Coordinate.";
+      case 3:
+        return "COORDINATES COMBINED: [50] + [2]. Target acquired: ROOM 502. Proceed immediately for Round 4: The Phishing Net.";
+      case 4:
+        return "SECURITY BYPASSED. Password HACKD accepted. The 'Logic Gate' directory is now unzipped on local terminals. Begin Round 5.Use PAssword to unlock the folder";
+      case 5:
+        return "FIREWALL COLLAPSED. Phrase 'WALL BREACHED' confirmed. Use the Phrase to Unlock The Next Folder.";
+      case 6:
+        return "SYSTEM CONTROLLED. THE VAULT IS OPEN. YOU HAVE DOMINATED THE GRID.GO TO ROOM 505";
+      default:
+        return "NODE SECURED. UPLINK ESTABLISHED.";
+    }
+  };
+
+  // QR Scanner Effect
+  useEffect(() => {
+    if (showScanner && !scanResult) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        const scanner = new Html5QrcodeScanner(
+          "reader",
+          { fps: 10, qrbox: { width: 300, height: 300 } },
+          false,
+        );
+
+        scanner.render(
+          (decodedText) => {
+            setScanResult(decodedText);
+            scanner.clear();
+          },
+          (error) => {
+            // console.warn(error);
+          },
+        );
+
+        // Store cleanup
+        return () => {
+          scanner
+            .clear()
+            .catch((error) => console.log("Failed to clear scanner."));
+        };
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showScanner, scanResult]);
+
   //Game Logic
   const handleTerminalSubmit = async (e) => {
     e.preventDefault();
@@ -203,6 +263,9 @@ export default function UserDashboard() {
       terminalInput.trim().toUpperCase() ===
         currentNode.correct_key.toUpperCase()
     ) {
+      const completedNodeId = team.current_node;
+      setMissionAlert(getSuccessMessage(completedNodeId));
+
       const nextNodeId = team.current_node + 1;
       const isFinished = nextNodeId > nodes.length;
 
@@ -385,8 +448,9 @@ export default function UserDashboard() {
       </header>
 
       <main className="pt-24 pb-32 px-4 max-w-md mx-auto space-y-6 relative z-10">
-        <div className="flex gap-4 items-stretch h-[400px]">
-          <div className="w-12 flex flex-col items-center justify-between py-2 bg-black border border-green-900/30 rounded-full relative overflow-hidden group">
+        <div className="flex flex-col md:flex-row gap-4 items-stretch h-auto md:h-[400px]">
+          {/* Vertical Progress (Desktop) */}
+          <div className="hidden md:flex w-12 flex-col items-center justify-between py-2 bg-black border border-green-900/30 rounded-full relative overflow-hidden group">
             <div
               className={`absolute inset-x-0 bottom-0 w-full transition-all duration-1000 ease-out bg-green-500/20`}
               style={{ height: `${globalProgress}%` }}
@@ -407,6 +471,17 @@ export default function UserDashboard() {
             <span className="absolute bottom-4 w-full text-center text-xs font-bold z-20 text-green-400">
               {globalProgress}%
             </span>
+          </div>
+
+          {/* Horizontal Progress (Mobile) */}
+          <div className="flex md:hidden w-full h-8 items-center bg-black border border-green-900/30 rounded-full relative overflow-hidden">
+            <div
+              className="absolute inset-y-0 left-0 h-full bg-green-500/20 transition-all duration-1000 ease-out"
+              style={{ width: `${globalProgress}%` }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-green-500">
+              PROGRESS: {globalProgress}%
+            </div>
           </div>
 
           {/* Nodes Grid */}
@@ -486,6 +561,18 @@ export default function UserDashboard() {
           </div>
 
           <div className="space-y-4">
+            {team?.current_node === 3 && (
+              <Button
+                onClick={() => {
+                  setShowScanner(true);
+                  setScanResult(null);
+                }}
+                className="w-full bg-yellow-400/10 border border-yellow-400 text-yellow-400 hover:bg-yellow-400/20 font-bold tracking-widest flex items-center justify-center gap-2 mb-4 animate-pulse"
+              >
+                <QrCode className="w-4 h-4" /> SCAN PHYSICAL CLUE
+              </Button>
+            )}
+
             <div className="relative">
               <span
                 className={`absolute left-3 top-2.5 text-sm select-none ${errorMsg ? "text-red-500" : "text-green-600"}`}
@@ -574,6 +661,104 @@ export default function UserDashboard() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Scanner Overlay */}
+      {showScanner && (
+        <div className="fixed inset-0 z-[70] bg-black flex flex-col items-center justify-center p-4">
+          {/* Custom Styles for Scanner Library Internals */}
+          <style>{`
+            #reader button {
+              background-color: transparent !important;
+              border: 1px solid #22c55e !important;
+              color: #22c55e !important;
+              padding: 10px 20px !important;
+              font-family: monospace !important;
+              text-transform: uppercase !important;
+              font-weight: bold !important;
+              cursor: pointer !important;
+              margin-top: 20px !important;
+            }
+            #reader button:hover {
+              background-color: rgba(34, 197, 94, 0.2) !important;
+            }
+            #reader__scan_region {
+               background: transparent !important;
+            }
+          `}</style>
+
+          <Button
+            variant="ghost"
+            className="absolute top-4 right-4 text-green-500 hover:text-red-500 z-20"
+            onClick={() => setShowScanner(false)}
+          >
+            <X className="w-8 h-8" />
+          </Button>
+
+          {!scanResult ? (
+            <div
+              id="reader"
+              className="w-full max-w-lg aspect-square bg-black border-2 border-green-500 rounded-lg overflow-hidden flex items-center justify-center shadow-[0_0_50px_rgba(34,197,94,0.3)]"
+            >
+              <div className="text-green-500 animate-pulse text-xs font-bold tracking-widest">
+                INITIALIZING SENSORS...
+              </div>
+            </div>
+          ) : (
+            <div className="max-w-sm w-full bg-black border border-green-500 p-6 space-y-4 shadow-[0_0_50px_rgba(0,255,0,0.2)]">
+              <div className="flex items-center gap-2 border-b border-green-900 pb-2">
+                <QrCode className="w-5 h-5 text-green-500" />
+                <h3 className="font-bold text-green-400 tracking-widest">
+                  DATA DECRYPTED
+                </h3>
+              </div>
+              <div className="bg-green-900/10 p-4 border border-green-500/30 rounded font-mono text-xl text-center text-green-300 break-all select-all">
+                {scanResult}
+              </div>
+              <Button
+                className="w-full bg-green-600 hover:bg-green-500 text-black font-bold"
+                onClick={() => {
+                  setShowScanner(false);
+                  setScanResult(null);
+                }}
+              >
+                CLOSE UPLINK
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Mission Update Overlay */}
+      {missionAlert && (
+        <div className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="max-w-lg w-full border border-green-500 bg-black shadow-[0_0_50px_rgba(0,255,0,0.2)] p-1">
+            <div className="border border-green-900/50 p-6 space-y-6">
+              <div className="flex items-center gap-3 border-b border-green-900/50 pb-4">
+                <Terminal className="w-6 h-6 text-green-500 animate-pulse" />
+                <h2
+                  className="text-xl font-black tracking-widest text-white glitch"
+                  data-text="MISSION_UPDATE"
+                >
+                  MISSION_UPDATE
+                </h2>
+              </div>
+
+              <div className="font-mono text-green-400 text-sm leading-relaxed typing-effect">
+                {missionAlert}
+              </div>
+
+              <div className="pt-4 flex justify-end">
+                <Button
+                  onClick={() => setMissionAlert(null)}
+                  className="bg-green-600 text-black hover:bg-green-500 font-bold tracking-widest"
+                >
+                  ACKNOWLEDGE_TRANSMISSION
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating System Alerts */}
       {alertMsg && (

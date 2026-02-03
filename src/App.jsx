@@ -35,7 +35,24 @@ function App() {
           <Route path="/spectator" element={<SpectatorDashboard />} />
         </Routes>
       </Suspense>
-      <Toaster richColors position="top-center" theme="dark" />
+      <Toaster
+        richColors
+        position="top-center"
+        theme="dark"
+        toastOptions={{
+          style: {
+            padding: "16px",
+            fontSize: "16px",
+          },
+          classNames: {
+            toast:
+              "w-full max-w-[90vw] md:max-w-[400px] shadow-2xl border-2 font-mono",
+            title: "text-lg font-bold",
+            description: "text-sm font-medium opacity-90",
+            actionButton: "bg-green-500 text-black font-bold p-3",
+          },
+        }}
+      />
     </Router>
   );
 }

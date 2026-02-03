@@ -31,6 +31,9 @@ import {
   Terminal,
   Lock,
   Shield,
+  ChevronDown,
+  ChevronUp,
+  Settings,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -49,6 +52,8 @@ export default function AdminDashboard() {
   const [isNukeOpen, setIsNukeOpen] = useState(false);
   const [gameDuration, setGameDuration] = useState(60);
   const [timeLeft, setTimeLeft] = useState(3600);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [isManageTeamOpen, setIsManageTeamOpen] = useState(false);
 
   // Timer Logic
   useEffect(() => {
@@ -245,11 +250,11 @@ export default function AdminDashboard() {
         start_time: null,
         paused_at: null,
       })
-      .neq("id", "00000000-0000-0000-0000-000000000000"); 
+      .neq("id", "00000000-0000-0000-0000-000000000000");
 
     if (!error) {
       addLog("TIMER RESET: GAME MOVED TO STANDBY PHASE.");
-      setTimeLeft(gameDuration * 60); 
+      setTimeLeft(gameDuration * 60);
     } else {
       addLog(`TIMER RESET ERROR: ${error.message}`);
     }
@@ -316,6 +321,58 @@ export default function AdminDashboard() {
       );
     } else {
       addLog(`ADJUST ERROR: ${error.message}`);
+    }
+  };
+
+  const handleIncrement = async (team) => {
+    // Hard limit to 6 nodes
+    if ((team.current_node || 0) >= 6) return;
+
+    const { error } = await supabase
+      .from("teams")
+      .update({
+        current_node: (team.current_node || 0) + 1,
+        score: (team.score || 0) + 100,
+        is_finished: false,
+      })
+      .eq("id", team.id);
+
+    if (!error) {
+      addLog(
+        `ADMIN: Promoted Team ${team.team_name} to Node ${team.current_node + 1}`,
+      );
+      toast.success(`Promoted ${team.team_name}`);
+      fetchTeams();
+      setIsManageTeamOpen(false);
+    } else {
+      addLog(`PROMOTE ERROR: ${error.message}`);
+      toast.error("Failed to promote team");
+    }
+  };
+
+  const handleDowngrade = async (team) => {
+    // Allow downgrade if node > 1 OR score > 0 (to fix score glitches)
+    if (team.current_node <= 1 && (team.score || 0) <= 0) return;
+
+    const { error } = await supabase
+      .from("teams")
+      .update({
+        current_node: Math.max(1, team.current_node - 1),
+        score: Math.max(0, (team.score || 0) - 100),
+        is_finished: false,
+      })
+      .eq("id", team.id);
+
+    if (!error) {
+      addLog(
+        `ADMIN: Downgraded Team ${team.team_name} to Node ${team.current_node - 1}`,
+      );
+      toast.success(`Downgraded ${team.team_name}`);
+      fetchTeams();
+      setIsManageTeamOpen(false);
+    } else {
+      addLog(`DOWNGRADE ERROR: ${error.message}`);
+      toast.error("Failed to downgrade team");
     }
   };
 
@@ -448,15 +505,30 @@ export default function AdminDashboard() {
                     >
                       {team.members || "—"}
                     </TableCell>
-                    <TableCell>0{team.current_node}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span>0{team.current_node}</span>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 text-amber-500 hover:bg-amber-900/30"
+                          onClick={() => {
+                            setSelectedTeam(team);
+                            setIsManageTeamOpen(true);
+                          }}
+                        >
+                          <Settings className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell>{team.score}</TableCell>
                     <TableCell className="text-right">
                       {team.is_finished ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded textxs font-medium bg-green-900/30 text-green-500 border border-green-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-900/30 text-green-500 border border-green-800">
                           COMPLETED
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-900/30 text-amber-500 border border-amber-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded textxs font-medium bg-amber-900/30 text-amber-500 border border-amber-800">
                           ACTIVE
                         </span>
                       )}
@@ -612,6 +684,73 @@ export default function AdminDashboard() {
                     CONFIRM RESET
                   </Button>
                 </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Manage Team Dialog */}
+            <Dialog open={isManageTeamOpen} onOpenChange={setIsManageTeamOpen}>
+              <DialogContent className="bg-black border-amber-700 text-amber-500">
+                <DialogHeader>
+                  <DialogTitle className="tracking-widest flex items-center gap-2">
+                    <Settings className="w-4 h-4" /> MANAGE TEAM CLEARANCE
+                  </DialogTitle>
+                  <DialogDescription className="text-amber-800">
+                    Manually adjust node level for:{" "}
+                    <span className="text-amber-400 font-bold">
+                      {selectedTeam?.team_name}
+                    </span>
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="py-4 space-y-4">
+                  <div className="flex justify-between items-center bg-amber-900/10 p-4 border border-amber-900/30 rounded">
+                    <div className="text-center">
+                      <div className="text-xs text-amber-700 uppercase">
+                        Current Node
+                      </div>
+                      <div className="text-2xl font-bold font-mono text-amber-400">
+                        0{selectedTeam?.current_node}
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-amber-700 uppercase">
+                        Score
+                      </div>
+                      <div className="text-2xl font-bold font-mono text-amber-400">
+                        {selectedTeam?.score}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button
+                      variant="outline"
+                      className="h-24 bg-red-900/10 border-red-900/50 hover:bg-red-900/30 text-red-500 flex flex-col gap-2"
+                      onClick={() => handleDowngrade(selectedTeam)}
+                      disabled={
+                        selectedTeam?.current_node <= 1 &&
+                        (selectedTeam?.score || 0) <= 0
+                      }
+                    >
+                      <ChevronDown className="w-8 h-8" />
+                      <span className="font-bold">DEMOTE (-1)</span>
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="h-24 bg-green-900/10 border-green-900/50 hover:bg-green-900/30 text-green-500 flex flex-col gap-2"
+                      onClick={() => handleIncrement(selectedTeam)}
+                      disabled={selectedTeam?.current_node >= 6}
+                    >
+                      <ChevronUp className="w-8 h-8" />
+                      <span className="font-bold">PROMOTE (+1)</span>
+                    </Button>
+                  </div>
+
+                  <p className="text-[10px] text-center text-amber-800 font-mono">
+                    WARNING: Downgrading will reduce score by 100pts instantly.
+                  </p>
+                </div>
               </DialogContent>
             </Dialog>
           </div>
