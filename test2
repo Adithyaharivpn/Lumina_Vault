@@ -1,0 +1,252 @@
+Round 1: The "Shift + 2" Decryption Challenge
+Instructions for Teams: Use the Shift + 2 key to decode these questions.Once decoded, solve the questions.
+ 
+QUESTION 1
+•	Encrypted: "Yjcv ku jcnh qh qpg jwpftgf?"
+•	Decoded: "What is half of one hundred?"
+•	ANSWER: 50
+ 
+QUESTION 2
+•	Encrypted: "Yjcv ku 322 okpwu 72?"
+•	Decoded: "What is 100 minus 50?"
+•	ANSWER: 50
+ 
+QUESTION 3
+•	Encrypted: "Jqy ocpa uvcugu ctg kp vjg WUC?"
+•	Decoded: "How many states are in the USA?"
+•	ANSWER: 50
+ 
+QUESTION 4
+•	Encrypted: "Hgvgtokpg vjg pgzv pwodgt: 10, 20, 30, 40, _?"
+•	Decoded: "Determine the next number: 10, 20, 30, 40, _?"
+•	ANSWER: 50
+ 
+QUESTION 5
+•	Encrypted: "Hkxg fgecfgu gswcn jqy ocpa agctu?"
+•	Decoded: "Five decades equal how many years?"
+•	ANSWER: 50
+ 
+
+Final Output for Round 1
+Once the teams solve these, they will realize every single answer is 50. This confirms they have the correct "Key" to pair with the Round 3 answer later.
+
+
+
+
+
+
+Round 2: Breach Defense Match-Up
+Instructions: Match the Threat in Column A with the correct Mechanism in Column B.
+Column A: Threat	Column B: Definition/Mechanism
+1. Ransomware	A. Exploits trust by masquerading as a reputable entity in electronic communications.
+2. SQL Injection	B. An attacker places themselves between two communicating parties to intercept data.
+3. Man-in-the-Middle (MitM)	C. Restricts access to a computer system and demands a fee for the restriction to be removed.
+4. Phishing	D. Floods a network or server with traffic to make it unavailable to users.
+5. DDoS Attack	E. Inserting malicious code into entry fields for execution (e.g., to dump a database).
+ 
+ Answer Key for Organizers
+•	1 – C 
+•	2 - E
+•	3 - B
+•	4 - A
+•	5 - D
+
+
+
+
+
+Round 3: The Physical Hunt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Round 4: The Phishing Net (Precision Mode)
+Format: Web Phishing Analysis
+Target Teams: 15
+Instructions to Teams
+Each email below contains one incorrect letter.
+Identify the wrong letter in each email.
+ 
+EMAIL 1
+From: support@paypal.com
+Subject: Account Verification
+Mail Body:
+Dear User,
+We detected unusual activity on your account.
+Please verify your accounth to restore full access.
+Thank you,
+PayPal Security Team
+Error Identified:
+Word accounth (extra letter h)
+Letter Found:
+h
+ 
+EMAIL 2
+From: admin@google.com
+Subject: Storage Alert
+Mail Body:
+Your Google Drive storage is almost full.
+Please take actiona to prevent service interruption.
+Error Identified:
+Word actiona (extra letter a)
+Letter Found:
+a
+ 
+EMAIL 3
+From: billing@amazon.in
+Subject: Invoice Available
+Mail Body:
+Your invoice is attached below.
+File name: Invoice_Marchc.pdf
+Error Identified:
+File name contains extra letter c
+Letter Found:
+c
+ 
+EMAIL 4
+From: it-support@college.edu
+Subject: Login Verification
+Mail Body:
+We noticed a login from a new device.
+Kindly reply okk to confirm this activity.
+Error Identified:
+Word okk (extra letter k)
+Letter Found:
+k 
+EMAIL 5
+From: noreply@linkedin.com
+Subject: New Connection
+Mail Body:
+You have received a new connection request.
+View profile to decide whether to acceptd or ignore.
+Error Identified:
+Word acceptd (extra letter d)
+Letter Found:
+d
+ 
+Final Output
+Collected wrong letters (in order): h a c k d
+Output:
+HACKD
+SET 2
+Mail 2.1
+From: support@paypahl.com
+Mail 2.2
+From: admin@googlae.com
+Mail 2.3
+From: billing@amaczon.in
+Mail 2.4
+From: it-support@netflikk.com
+Mail 2.5
+From: noreply@linkeddin.com
+Output: HACKD
+ 
+SET 3
+Mail 3.1
+From: security@paymhent.com
+Mail 3.2
+From: alerts@micraosoft.com
+Mail 3.3
+From: billing@flipkcart.com
+Mail 3.4
+From: support@instagrramk.com
+Mail 3.5
+From: noreply@amaazond.com
+Output: HACKD
+ 
+SET 4
+Mail 4.1
+From: helpdesk@facebhook.com
+Mail 4.2
+From: admin@twaitter.com
+Mail 4.3
+From: billing@dropbbox.com
+Mail 4.4
+From: support@snapchattk.com
+Mail 4.5
+From: security@reddidt.com
+Output: HACKD
+ 
+SET 5
+Mail 5.1
+From: support@whhatsapp.com
+Mail 5.2
+From: admin@spotifay.com
+Mail 5.3
+From: billing@paytmc.com
+Mail 5.4
+From: alerts@googkle.com
+Mail 5.5
+From: noreply@telegrdam.org
+Output: HACKD
+Round 5: (C Programming Challenge)
+Target Teams: Top 15 (Elimination to Top 10)
+Objective: Identify and correct the syntax and logical errors in the C code to extract the hidden key phrase.
+Output Phrase: WALL BREACHED
+ 
+Challenge Set 1: The ASCII Cipher
+Instructions: The following code is designed to translate a sequence of integers into a hidden message by adding a numerical key to each value. However, the code contains 5 critical errors (syntax and logic) that prevent it from compiling and running correctly. Identify the errors and determine the output.
+C
+#include <stdio.h>
+
+int main( {   
+
+    // Hidden sequence
+    int vault[] = {77, 55, 66, 66, 22, 56, 72, 59, 55, 57, 62, 59, 58};
+    int key = "10";   
+
+    for(int i = 0; i <= 13; i++) {   
+        // The core logic
+        printf("%d", vault[i] + key);   
+    }
+
+    retrn 0  
+}
+ 
+Challenge Set 2: The Memory Reverse
+Instructions: This program is intended to print a jumbled string in reverse order to reveal the final password. The developer has left 4 errors in the script. Correct the logic to reveal the secret string.
+C
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    // A jumbled string
+    char message[] = "DEHCAERB LLAW";
+    int length = strlen(message);
+
+    for(int i = length; i >= 0; i--) {   
+        // Printing backwards
+        if(message[i] = ' ') {           
+            printf(" "); 
+        } else {
+            printf("%d", message[i]);    
+        }
+    }
+
+    retrn 0;  
+}
+ 
+
