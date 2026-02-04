@@ -1,0 +1,48 @@
+ Lumina-Vault: Operational Briefing Script 
+Round 1: The Cryptic Entry (Caesar Cipher)
+•	The Logic: Teams are given a sheet of encrypted questions. They must realize the encryption is a Caesar Cipher (Shift + 2).
+•	The Example:
+o	Encrypted: "Yjcv ku jcnh qh qpg jwpftgf?"
+o	Decoded: "What is half of one hundred?"
+•	The Clue to Round 2: Every answer in this round is 50. This number is "half" of their next destination coordinate.
+Round 2: Breach Defense (Matching)
+•	The Logic: A test of cybersecurity vocabulary.
+•	The Example: Teams must match Ransomware to its definition: "Restricts access to a system and demands a fee."
+•	The Clue to Round 3: Once the matches (1-C, 2-E, etc.) are verified by a volunteer, teams are handed the next clue
+Round 3: The Physical Grid (The Hunt)
+•	The Logic: Using the map from Round 2, teams navigate the campus to find a hidden sticker or QR code.
+•	The Clue to Round 4: At the location, they find the number 2.
+•	The Connection: Teams must combine the 50 (from Round 1) and the 2 (from Round 3) to get Room 502. This is where the "Phishing Lab" is located.
+Round 4: The Phishing Net (Filter-15 teams)
+•	The Logic: Teams analyze 5 spoofed emails to find deliberate "errors" (extra letters).
+•	The Example: * Email 1: "Please verify your accounth..." (Extra letter: H)
+o	Email 2: "Please take actiona..." (Extra letter: A)
+•	The Clue to Round 5: Collecting all errors in order spells H-A-C-K-D. This is the password to unzip the final programming challenge folder on the lab computers.
+Round 5: Logic Gate (Debugging) (Filter – 10 teams)
+•	The Logic: Teams are given two broken C programs. They must fix the syntax to see the hidden message.
+•	The Example:
+o	Bug: int key = "10"; (Should be an integer, not a string).
+o	Bug: retrn 0 (Misspelled keyword).
+•	The Clue to Final: Once fixed, the code prints the phrase: WALL BREACHED. This is the password to unzip the final programming challenge folder on the lab computers.
+ 
+
+
+
+
+Round 6: The Final Round: The Master Key
+This is the elimination round for the Top 4 Teams.
+1.	Step A (Steganography): Teams open an image on the USB drive using a Hex Editor. They scroll to the very bottom to find hidden text: GOLDEN-.
+2.	Step B (Web Inspect): They open a local website where the "Unlock" button is hidden using CSS (display: none).
+o	The Task: Use Inspect Element to change the CSS and make the button appear.
+Or
+o	The Task: Fix the website code to find the code
+3.	The Win: They combine the two parts to enter the Master Key.To get the clue to treasure 
+
+Answers
+id,node_name,correct_key,location_hint
+1,The Cryptic Entry,50,Starting Plaza / Base Command
+2,Breach Defense,CEBAD,Cyber Security Lab Entrance
+3,The Physical Grid,2,Search the coordinates from R1 & R3
+4,The Phishing Net,HACKD,Room 502 - Digital Lab
+5,Logic Gate,WALLBREACHED,The Vault (Main Stage)
+6,The Master Key,GOLDEN-WALLBREACHED,Final System Terminal
