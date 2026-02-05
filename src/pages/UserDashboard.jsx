@@ -667,7 +667,7 @@ export default function UserDashboard() {
 
       {/* Scanner Overlay */}
       {showScanner && (
-        <div className="fixed inset-0 z-[70] bg-black flex flex-col items-center justify-center p-4">
+        <div className="fixed inset-0 z-70 bg-black flex flex-col items-center justify-center p-4">
           {/* Custom Styles for Scanner Library Internals */}
           <style>{`
             #reader button {
@@ -733,7 +733,7 @@ export default function UserDashboard() {
 
       {/* Mission Update Overlay */}
       {missionAlert && (
-        <div className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-6 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-60 bg-black/95 flex items-center justify-center p-6 animate-in fade-in duration-300">
           <div className="max-w-lg w-full border border-green-500 bg-black shadow-[0_0_50px_rgba(0,255,0,0.2)] p-1">
             <div className="border border-green-900/50 p-6 space-y-6">
               <div className="flex items-center gap-3 border-b border-green-900/50 pb-4">
