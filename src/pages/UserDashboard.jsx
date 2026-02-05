@@ -193,9 +193,9 @@ export default function UserDashboard() {
       case 1:
         return "UPLINK STABLE. Primary Coordinate acquired: [50]. Proceed to Cyber Security Lab for Round 2: Breach Defense.";
       case 2:
-        return "THREATS NEUTRALIZED. Access Map granted. Locate the physical marker in the restricted zone to find the Secondary Coordinate.";
+        return "THREATS NEUTRALIZED. Access granted. Locate the physical marker in the restricted zone to find the Secondary Coordinate.";
       case 3:
-        return "COORDINATES COMBINED: [50] + [2]. Target acquired: ROOM 502. Proceed immediately for Round 4: The Phishing Net.";
+        return "COORDINATES RECIEVED. Proceed immediately to Room for Round 4: The Phishing Net.";
       case 4:
         return "SECURITY BYPASSED. Password HACKD accepted. The 'Logic Gate' directory is now unzipped on local terminals. Begin Round 5.Use PAssword to unlock the folder";
       case 5:
@@ -258,11 +258,14 @@ export default function UserDashboard() {
       `Attempting Override - Input: "${terminalInput}" | Target: "${currentNode.correct_key}" | NodeID: ${currentNode.id}`,
     );
 
-    if (
-      currentNode.correct_key &&
-      terminalInput.trim().toUpperCase() ===
-        currentNode.correct_key.toUpperCase()
-    ) {
+    const userInput = terminalInput.trim().toUpperCase();
+
+    // Check if it's an array (multiple answers) or a single string
+    const isCorrect = Array.isArray(currentNode.correct_key)
+      ? currentNode.correct_key.some((key) => key.toUpperCase() === userInput)
+      : currentNode.correct_key?.toUpperCase() === userInput;
+
+    if (isCorrect) {
       const completedNodeId = team.current_node;
       setMissionAlert(getSuccessMessage(completedNodeId));
 
