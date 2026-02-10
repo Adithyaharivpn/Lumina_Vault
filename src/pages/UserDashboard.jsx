@@ -197,7 +197,7 @@ export default function UserDashboard() {
       case 3:
         return "COORDINATES RECIEVED. Proceed immediately to Room for Round 4: The Phishing Net.";
       case 4:
-        return "SECURITY BYPASSED. Password HACKD accepted. The 'Logic Gate' directory is now unzipped on local terminals. Begin Round 5.Use PAssword to unlock the folder";
+        return "SECURITY BYPASSED. Password HACKD accepted. The 'Logic Gate' directory is now unzipped on local terminals. Begin Round 5.Use Password to unlock the folder";
       case 5:
         return "FIREWALL COLLAPSED. Phrase 'WALL BREACHED' confirmed. Use the Phrase to Unlock The Next Folder.";
       case 6:
@@ -219,9 +219,48 @@ export default function UserDashboard() {
         );
 
         scanner.render(
-          (decodedText) => {
-            setScanResult(decodedText);
+          async (decodedText) => {
+            // Stop scanning immediately
             scanner.clear();
+
+            try {
+              // Call the backend to check limits
+              const { data, error } = await supabase.rpc("log_scan", {
+                p_team_id: team.id,
+                p_qr_code: decodedText,
+              });
+
+              if (error) {
+                // If the error is our custom limit reached error
+                if (error.message.includes("LIMIT_REACHED")) {
+                  setErrorMsg("ACCESS_DENIED: MAX TEAMS REACHED");
+                  setTimeout(() => setErrorMsg(""), 3000);
+                  toast.error("Node Limit Reached", {
+                    description:
+                      "This node has already been claimed by 5 teams.",
+                  });
+                } else {
+                  console.error("Scan log error:", error);
+                  toast.error("Scan Error", {
+                    description: "Could not verify scan. Please try again.",
+                  });
+                }
+                setShowScanner(false);
+                return;
+              }
+
+              // Success!
+              setScanResult(decodedText);
+              toast.success("Scan Verified", {
+                description: "Uplink established securely.",
+              });
+            } catch (err) {
+              console.error("Unexpected scan error:", err);
+              toast.error("System Error", {
+                description: "Critical failure in scan verification.",
+              });
+              setShowScanner(false);
+            }
           },
           (error) => {
             // console.warn(error);
