@@ -12,6 +12,8 @@ import {
   Loader2,
   X,
   QrCode,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { Card, CardContent } from "@/components/ui/card";
@@ -101,8 +103,8 @@ function LockedVault({ team, onSuccess }) {
         </p>
 
         <div className="mb-8 border border-green-900/50 p-4 bg-black/50 text-xs font-mono text-left opacity-70">
-          <p className="text-green-400 mb-1">&gt;&gt; LATEST INTERCEPT:</p>
-          <p className="text-white tracking-widest">[ GOLDENWALLBREACHED ]</p>
+          <p className="text-green-400 mb-1">&gt;&gt; FOLDER PASSWORD:</p>
+          <p className="text-white tracking-widest">[ OBSIDIAN ]</p>
         </div>
 
         <button
@@ -158,6 +160,7 @@ export default function UserDashboard() {
   const navigate = useNavigate();
   const [timeLeft, setTimeLeft] = useState(3600);
   const [signalStrength, setSignalStrength] = useState(3);
+  const [isLogMaximized, setIsLogMaximized] = useState(false);
   const [overrideProgress, setOverrideProgress] = useState(0);
   const [terminalInput, setTerminalInput] = useState("");
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
@@ -348,7 +351,7 @@ export default function UserDashboard() {
       case 4:
         return ">> PASSWORD ACCEPTED. Directory 'Logic Gate' unzipped.";
       case 5:
-        return ">> FIREWALL DESTROYED. Data Stream Decrypted: [ PASSWORD: GOLDENWALLBREACHED ]. Final Level Unlocked.";
+        return ">> FIREWALL DESTROYED. Decryption Complete. KYBER-CRYSTAL KEY: [ OBSIDIAN ].";
       case 6:
         return ">> MASTER KEY ACCEPTED. THE VAULT IS OPEN. Report to Room 505.";
       default:
@@ -364,14 +367,10 @@ export default function UserDashboard() {
     const input = terminalInput.trim().toUpperCase();
     let isCorrect = false;
 
-    // --- SECURITY: Simple Base64 Obfuscation ---
-    // Answers are encoded to prevent casual reading (inspect element).
-
     const verifyAnswer = (input, targetEncoded) => {
       const targets = Array.isArray(targetEncoded)
         ? targetEncoded
         : [targetEncoded];
-      // Check if any target decodes to the input
       return targets.some((encoded) => {
         try {
           return atob(encoded) === input;
@@ -382,18 +381,12 @@ export default function UserDashboard() {
     };
 
     const answerMap = {
-      1: ["NTA="], // "50"
-      2: [
-        "QkxVRQ==", // BLUE
-        "UElOSw==", // PINK
-        "R09MRA==", // GOLD
-        "R1JBWQ==", // GRAY
-        "Q1lBTg==", // CYAN
-      ],
-      3: ["Mg=="], // "2"
-      4: ["SEFDS0Q="], // "HACKD"
-      5: ["V0FMTEJSRUFDSEVE"], // "WALLBREACHED"
-      6: ["R09MREVOV0FMTEJSRUFDSEVE"], // "GOLDENWALLBREACHED"
+      1: ["NTA="],
+      2: ["QkxVRQ==", "UElOSw==", "R09MRA==", "R1JBWQ==", "Q1lBTg=="],
+      3: ["Mg=="],
+      4: ["SEFDS0Q="],
+      5: ["V0FMTEJSRUFDSEVE"],
+      6: ["R09MREVOV0FMTEJSRUFDSEVE"],
     };
 
     const targetEncoded = answerMap[currentNodeId];
@@ -516,21 +509,29 @@ export default function UserDashboard() {
     );
   }
 
+  const isGameComplete = team?.current_node > 6 || team?.is_finished;
+
   return (
-    <div className="min-h-screen bg-black text-[#00ff00] font-mono overflow-x-hidden relative selection:bg-green-900/50">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black/90 border-b border-green-900/50 backdrop-blur-sm p-4 flex justify-between items-center shadow-[0_0_15px_rgba(0,255,0,0.1)]">
+    <div
+      className={`min-h-screen font-mono overflow-x-hidden relative selection:bg-green-900/50 transition-colors duration-1000 ease-in-out ${isGameComplete ? "bg-slate-950 text-sky-400 selection:bg-sky-900/30" : "bg-black text-[#00ff00]"}`}
+    >
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-sm p-4 flex justify-between items-center shadow-lg transition-all duration-1000 ${isGameComplete ? "bg-slate-900/90 border-b border-sky-800/50 shadow-sky-900/20" : "bg-black/90 border-b border-green-900/50 shadow-[0_0_15px_rgba(0,255,0,0.1)]"}`}
+      >
         <div className="flex items-center gap-2">
           <div className="flex gap-0.5 items-end h-5">
             {[1, 2, 3, 4].map((bar) => (
               <div
                 key={bar}
-                className={`w-1 bg-[#00ff00] transition-all duration-300 ${signalStrength >= bar ? "opacity-100" : "opacity-20"}`}
+                className={`w-1 transition-all duration-300 ${signalStrength >= bar ? "opacity-100" : "opacity-20"} ${isGameComplete ? "bg-sky-500" : "bg-[#00ff00]"}`}
                 style={{ height: `${bar * 25}%` }}
               />
             ))}
           </div>
-          <span className="text-xs font-bold animate-pulse text-green-400">
-            NET_UPLINK
+          <span
+            className={`text-xs font-bold animate-pulse ${isGameComplete ? "text-sky-400" : "text-green-400"}`}
+          >
+            {isGameComplete ? "SYSTEM_RESTORED" : "NET_UPLINK"}
           </span>
         </div>
         <div className="flex items-center gap-4">
@@ -553,25 +554,27 @@ export default function UserDashboard() {
             variant="ghost"
             size="sm"
             onClick={handleLogout}
-            className="h-6 text-[10px] text-green-800 hover:text-red-500 hover:bg-red-950/20 px-1 border border-transparent hover:border-red-900/50"
+            className={`h-6 text-[10px] px-1 border border-transparent transition-colors ${isGameComplete ? "text-sky-700 hover:text-red-400 hover:bg-red-950/10 hover:border-red-900/30" : "text-green-800 hover:text-red-500 hover:bg-red-950/20 hover:border-red-900/50"}`}
           >
             <LogOut className="w-3 h-3 mr-1" /> DISCONNECT
           </Button>
           <div
-            className="text-xl font-bold tracking-widest text-red-500 glitch text-right"
+            className={`text-xl font-bold tracking-widest text-right ${isGameComplete ? "text-sky-500/50" : "text-red-500 glitch"}`}
             data-text={formatTime(timeLeft)}
           >
-            {formatTime(timeLeft)}
+            {isGameComplete ? "00:00:00" : formatTime(timeLeft)}
           </div>
         </div>
         <div className="text-right">
-          <div className="text-[10px] text-green-700">TARGET</div>
+          <div
+            className={`text-[10px] ${isGameComplete ? "text-sky-700" : "text-green-700"}`}
+          >
+            {isGameComplete ? "STATUS" : "TARGET"}
+          </div>
           <div className="text-sm font-bold">
-            NODE{" "}
-            {team?.current_node
-              ? String(team.current_node).padStart(2, "0")
-              : "--"}{" "}
-            / 06
+            {isGameComplete
+              ? "SECURE"
+              : `NODE ${team?.current_node ? String(team.current_node).padStart(2, "0") : "--"} / 06`}
           </div>
         </div>
       </header>
@@ -579,23 +582,31 @@ export default function UserDashboard() {
       <main className="pt-24 pb-32 px-4 w-full max-w-md md:max-w-4xl mx-auto space-y-6 relative z-10 transition-all duration-300">
         <div className="flex flex-col md:flex-row gap-4 items-stretch h-auto md:h-[400px]">
           {/* Vertical Progress (Desktop) */}
-          <div className="hidden md:flex w-12 flex-col items-center justify-between py-2 bg-black border border-green-900/30 rounded-full relative overflow-hidden">
+          <div
+            className={`hidden md:flex w-12 flex-col items-center justify-between py-2 border rounded-full relative overflow-hidden transition-colors duration-1000 ${isGameComplete ? "bg-slate-900 border-sky-900/30" : "bg-black border-green-900/30"}`}
+          >
             <div
-              className="absolute inset-x-0 bottom-0 w-full bg-green-500/20"
+              className={`absolute inset-x-0 bottom-0 w-full ${isGameComplete ? "bg-sky-500/20" : "bg-green-500/20"}`}
               style={{ height: `${globalProgress}%` }}
             />
-            <span className="absolute bottom-4 w-full text-center text-xs font-bold z-20 text-green-400">
+            <span
+              className={`absolute bottom-4 w-full text-center text-xs font-bold z-20 ${isGameComplete ? "text-sky-400" : "text-green-400"}`}
+            >
               {globalProgress}%
             </span>
           </div>
 
           {/* Horizontal Progress (Mobile) */}
-          <div className="flex md:hidden w-full h-10 items-center bg-black border border-green-900/50 rounded-full relative overflow-hidden mb-6 mt-6 shrink-0 shadow-[0_0_10px_rgba(0,255,0,0.1)]">
+          <div
+            className={`flex md:hidden w-full h-10 items-center border rounded-full relative overflow-hidden mb-6 mt-6 shrink-0 shadow-lg transition-colors duration-1000 ${isGameComplete ? "bg-slate-900 border-sky-900/50" : "bg-black border-green-900/50 shadow-[0_0_10px_rgba(0,255,0,0.1)]"}`}
+          >
             <div
-              className="absolute inset-y-0 left-0 h-full bg-green-600/30 transition-all duration-1000 ease-out z-0"
+              className={`absolute inset-y-0 left-0 h-full transition-all duration-1000 ease-out z-0 ${isGameComplete ? "bg-sky-600/30" : "bg-green-600/30"}`}
               style={{ width: `${globalProgress}%` }}
             />
-            <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-green-400 z-10 drop-shadow-md">
+            <div
+              className={`absolute inset-0 flex items-center justify-center text-xs font-bold z-10 drop-shadow-md ${isGameComplete ? "text-sky-400" : "text-green-400"}`}
+            >
               PROGRESS: {globalProgress}%
             </div>
           </div>
@@ -609,33 +620,55 @@ export default function UserDashboard() {
                 return (
                   <Card
                     key={node.id}
-                    className={`border-l-4 transition-all duration-300 backdrop-blur-md text-inherit ${status === "active" ? "border-[#00ff00] bg-green-950/10 shadow-[0_0_20px_rgba(0,255,0,0.1)] border-t-0 border-r-0 border-b-0" : "border-green-800/50 bg-black opacity-60 border-t-0 border-r-0 border-b-0"}`}
+                    className={`border-l-4 transition-all duration-300 backdrop-blur-md text-inherit ${
+                      isGameComplete
+                        ? "border-sky-500 bg-slate-900/40 shadow-sky-900/10 border-t-0 border-r-0 border-b-0 opacity-80"
+                        : status === "active"
+                          ? "border-[#00ff00] bg-green-950/10 shadow-[0_0_20px_rgba(0,255,0,0.1)] border-t-0 border-r-0 border-b-0"
+                          : "border-green-800/50 bg-black opacity-60 border-t-0 border-r-0 border-b-0"
+                    }`}
                   >
                     <CardContent className="p-3 flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           {status === "active" ? (
-                            <Zap className="w-3 h-3 text-yellow-400 animate-pulse" />
+                            <Zap
+                              className={`w-3 h-3 animate-pulse ${isGameComplete ? "text-sky-400" : "text-yellow-400"}`}
+                            />
                           ) : (
-                            <CheckCircle className="w-3 h-3 text-green-400" />
+                            <CheckCircle
+                              className={`w-3 h-3 ${isGameComplete ? "text-sky-400" : "text-green-400"}`}
+                            />
                           )}
                           <span
-                            className={`text-sm font-bold ${status === "completed" ? "line-through text-green-700" : ""}`}
+                            className={`text-sm font-bold ${status === "completed" ? (isGameComplete ? "text-sky-300/80" : "line-through text-green-700") : isGameComplete ? "text-sky-100" : "text-green-400"}`}
                           >
                             {node.node_name ||
                               `NODE ${String(node.id).padStart(2, "0")}`}
                           </span>
                         </div>
-                        <div className="text-xs text-green-600/80 uppercase">
+                        <div
+                          className={`text-xs uppercase ${isGameComplete ? "text-sky-600" : "text-green-600/80"}`}
+                        >
                           {node.location_hint || "Unknown"}
                         </div>
+                        {status === "completed" &&
+                          getSuccessMessage(node.id) && (
+                            <div
+                              className={`text-[10px] mt-1 font-mono break-all ${isGameComplete ? "text-sky-400/80" : "text-green-400/80"}`}
+                            >
+                              {getSuccessMessage(node.id)}
+                            </div>
+                          )}
                       </div>
                       {status === "completed" && (
-                        <span className="text-[10px] bg-green-900/30 text-green-400 px-1 py-0.5 border border-green-500/30 rounded">
+                        <span
+                          className={`text-[10px] px-1 py-0.5 border rounded ${isGameComplete ? "bg-sky-900/10 text-sky-400 border-sky-500/20" : "bg-green-900/30 text-green-400 border-green-500/30"}`}
+                        >
                           DECRYPTED
                         </span>
                       )}
-                      {status === "active" && (
+                      {status === "active" && !isGameComplete && (
                         <div className="text-[10px] text-yellow-400 animate-pulse font-bold tracking-wider">
                           TARGET
                         </div>
@@ -648,62 +681,87 @@ export default function UserDashboard() {
         </div>
 
         {/* Level 4: Hidden Log Clue */}
-        {/* Level 4: Hidden Log Clue */}
         {team?.current_node === 4 && (
-          <div className="bg-black border border-green-900/50 p-4 font-mono text-[10px] md:text-sm text-green-400 h-48 md:h-64 overflow-y-auto w-full mb-6 shadow-inner tracking-tight md:tracking-normal">
-            <div className="space-y-0.5 md:space-y-1">
-              <p>[0.0012] Initializing CPU... OK</p>
-              <p>[0.0015] Checking hypervisor status... None detected.</p>
-              <p>[0.0022] Setting up interrupt controllers...</p>
-              <p>[0.0045] Memory Check: 16GB Detected [DDR4 3200MHz]</p>
-              <p>[0.0055] Checking PCI Express slots... 4 devices found.</p>
-              <p>[0.0067] ACPI: Core revision 20220215</p>
-              <p>[0.0089] WARN: Unexpected Byte at 0x48 (Sector_1)</p>
-              <p>[0.0101] pci 0000:00:01.0: reg 0x10: [mem 0x0000-0x0fff]</p>
-              <p>[0.0122] Loading Kernel Modules: [kvm, virtio, sound_core]</p>
-              <p>[0.0135] vgaarb: setting as boot device</p>
-              <p>[0.0155] eth0: Link up, 1000Mbps, full duplex</p>
-              <p>[0.0177] SCSI subsystem initialized</p>
-              <p>[0.0198] ERROR: Buffer Overflow at 0x41 (Stack_Pointer)</p>
-              <p>[0.0211] usb 1-1: new high-speed USB device number 2</p>
-              <p>[0.0241] mounting /dev/sda1 on /boot... OK</p>
-              <p>
-                [0.0255] EXT4-fs (sda1): re-mounted. Opts: errors=remount-ro
-              </p>
-              <p>[0.0289] Initializing Security Protocol: [SHA-256 Enabled]</p>
-              <p>[0.0302] Adding 4194300k swap on /var/swap. Priority:-2</p>
-              <p>[0.0334] CRITICAL: Packet Intercept at 0x43 (Port_80)</p>
-              <p>[0.0355] random: crng init done</p>
-              <p>[0.0381] systemd[1]: Starting Network Time Sync...</p>
-              <p>[0.0401] systemd[1]: Detected architecture x86-64.</p>
-              <p>[0.0422] systemd[1]: Reached target Network.</p>
-              <p>[0.0444] Clocksource: tsc: mask: 0xffffffffffffffff</p>
-              <p>[0.0467] WARN: Metadata mismatch at 0x4B (Offset_04)</p>
-              <p>[0.0488] NET: Registered protocol family 10</p>
-              <p>[0.0511] Cleaning up temporary files... [DONE]</p>
-              <p>[0.0532] Scanning for logical volumes... 0 found.</p>
-              <p>[0.0556] systemd[1]: Starting Rotate log files...</p>
-              <p>[0.0577] audit: type=1400 audit(164491200.057:2): res=1</p>
-              <p>[0.0598] ALERT: Intrusion detected at 0x44 (Node_Primary)</p>
-              <p>
-                [0.0622] systemd[1]: Finished Flush Journal to Persistent
-                Storage.
-              </p>
-              <p className="animate-pulse">
-                [0.0644] Core Dumped. System Halted.
-              </p>
+          <div
+            className={`${isLogMaximized ? "fixed inset-0 z-50 bg-black p-8" : `relative border p-4 h-48 md:h-64 mb-6 ${isGameComplete ? "bg-slate-950 border-sky-900/30" : "bg-black border-green-900/50"}`} font-mono shadow-inner tracking-tight md:tracking-normal transition-all duration-300`}
+          >
+            <button
+              onClick={() => setIsLogMaximized(!isLogMaximized)}
+              className={`absolute top-24 right-4 p-3 rounded-full z-60 shadow-[0_0_15px_rgba(0,255,0,0.5)] transition-all hover:scale-110 border ${isGameComplete ? "bg-sky-900 border-sky-500 text-sky-400 hover:text-white" : "bg-green-900 border-green-500 text-green-500 hover:text-green-300"}`}
+            >
+              {isLogMaximized ? (
+                <Minimize2 className="w-6 h-6" />
+              ) : (
+                <Maximize2 className="w-5 h-5" />
+              )}
+            </button>
+            <div
+              className={`overflow-y-auto w-full ${isLogMaximized ? "h-full text-lg" : "h-full text-[10px] md:text-sm"} ${isGameComplete ? "text-sky-500/60" : "text-green-400"}`}
+            >
+              <div className="space-y-0.5 md:space-y-1">
+                <p>[0.0012] Initializing CPU... OK</p>
+                <p>[0.0015] Checking hypervisor status... None detected.</p>
+                <p>[0.0022] Setting up interrupt controllers...</p>
+                <p>[0.0045] Memory Check: 16GB Detected [DDR4 3200MHz]</p>
+                <p>[0.0055] Checking PCI Express slots... 4 devices found.</p>
+                <p>[0.0067] ACPI: Core revision 20220215</p>
+                <p>[0.0089] WARN: Unexpected Byte at 0x48 (Sector_1)</p>
+                <p>[0.0101] pci 0000:00:01.0: reg 0x10: [mem 0x0000-0x0fff]</p>
+                <p>
+                  [0.0122] Loading Kernel Modules: [kvm, virtio, sound_core]
+                </p>
+                <p>[0.0135] vgaarb: setting as boot device</p>
+                <p>[0.0155] eth0: Link up, 1000Mbps, full duplex</p>
+                <p>[0.0177] SCSI subsystem initialized</p>
+                <p>[0.0198] ERROR: Buffer Overflow at 0x41 (Stack_Pointer)</p>
+                <p>[0.0211] usb 1-1: new high-speed USB device number 2</p>
+                <p>[0.0241] mounting /dev/sda1 on /boot... OK</p>
+                <p>
+                  [0.0255] EXT4-fs (sda1): re-mounted. Opts: errors=remount-ro
+                </p>
+                <p>
+                  [0.0289] Initializing Security Protocol: [SHA-256 Enabled]
+                </p>
+                <p>[0.0302] Adding 4194300k swap on /var/swap. Priority:-2</p>
+                <p>[0.0334] CRITICAL: Packet Intercept at 0x43 (Port_80)</p>
+                <p>[0.0355] random: crng init done</p>
+                <p>[0.0381] systemd[1]: Starting Network Time Sync...</p>
+                <p>[0.0401] systemd[1]: Detected architecture x86-64.</p>
+                <p>[0.0422] systemd[1]: Reached target Network.</p>
+                <p>[0.0444] Clocksource: tsc: mask: 0xffffffffffffffff</p>
+                <p>[0.0467] WARN: Metadata mismatch at 0x4B (Offset_04)</p>
+                <p>[0.0488] NET: Registered protocol family 10</p>
+                <p>[0.0511] Cleaning up temporary files... [DONE]</p>
+                <p>[0.0532] Scanning for logical volumes... 0 found.</p>
+                <p>[0.0556] systemd[1]: Starting Rotate log files...</p>
+                <p>[0.0577] audit: type=1400 audit(164491200.057:2): res=1</p>
+                <p>[0.0598] ALERT: Intrusion detected at 0x44 (Node_Primary)</p>
+                <p>
+                  [0.0622] systemd[1]: Finished Flush Journal to Persistent
+                  Storage.
+                </p>
+                <p className="animate-pulse">
+                  [0.0644] Core Dumped. System Halted.
+                </p>
+              </div>
             </div>
           </div>
         )}
 
         {/* Interaction Panel */}
         <div
-          className={`border bg-black/80 p-4 rounded-sm shadow-lg backdrop-blur-md transition-colors duration-300 ${errorMsg ? "border-red-500/50 shadow-red-900/20" : "border-[#00ff00]/30"}`}
+          className={`border p-4 rounded-sm shadow-lg backdrop-blur-md transition-all duration-1000 ${
+            isGameComplete
+              ? "bg-slate-900/80 border-sky-500/30 shadow-sky-900/20"
+              : `bg-black/80 ${errorMsg ? "border-red-500/50 shadow-red-900/20" : "border-[#00ff00]/30"}`
+          }`}
         >
-          <div className="flex items-center gap-2 mb-3 text-[#00ff00] border-b border-green-900/50 pb-2">
+          <div
+            className={`flex items-center gap-2 mb-3 border-b pb-2 transition-colors duration-1000 ${isGameComplete ? "text-sky-400 border-sky-900/50" : "text-[#00ff00] border-green-900/50"}`}
+          >
             <Terminal className="w-4 h-4" />
             <h3 className="text-sm font-bold tracking-wider">
-              OVERRIDE_TERMINAL
+              {isGameComplete ? "SYSTEM_ACCESS" : "OVERRIDE_TERMINAL"}
             </h3>
           </div>
           <div className="space-y-4">
@@ -714,7 +772,7 @@ export default function UserDashboard() {
                   setShowScanner(true);
                   setScanResult(null);
                 }}
-                className="w-full bg-green-900/20 border border-green-700 text-green-400 hover:bg-green-800/30 h-8 text-xs font-mono tracking-widest mb-2 animate-pulse"
+                className={`w-full h-8 text-xs font-mono tracking-widest mb-2 animate-pulse border ${isGameComplete ? "bg-sky-900/20 border-sky-700 text-sky-400 hover:bg-sky-800/30" : "bg-green-900/20 border-green-700 text-green-400 hover:bg-green-800/30"}`}
               >
                 [ SCAN_PHYSICAL_ASSET ]
               </Button>
@@ -722,25 +780,42 @@ export default function UserDashboard() {
 
             <div className="relative">
               <span
-                className={`absolute left-3 top-2.5 text-sm select-none ${errorMsg ? "text-red-500" : "text-green-600"}`}
+                className={`absolute left-3 top-2.5 text-sm select-none transition-colors duration-1000 ${errorMsg ? "text-red-500" : isGameComplete ? "text-sky-600" : "text-green-600"}`}
               >
                 root@signal:~#
               </span>
               <Input
                 value={terminalInput}
                 onChange={(e) => setTerminalInput(e.target.value)}
-                className={`pl-32 bg-black border-green-800 focus-visible:ring-green-500 font-mono h-10 ${errorMsg ? "text-red-500 border-red-800 focus-visible:ring-red-500" : "text-[#00ff00] placeholder:text-green-900"}`}
-                placeholder={errorMsg || "enter_code..."}
+                className={`pl-32 font-mono h-10 transition-all duration-1000 ${
+                  errorMsg
+                    ? "bg-black text-red-500 border-red-800 focus-visible:ring-red-500 placeholder:text-red-800"
+                    : isGameComplete
+                      ? "bg-slate-950 text-sky-400 border-sky-800 focus-visible:ring-sky-500 placeholder:text-sky-900"
+                      : "bg-black text-[#00ff00] border-green-800 focus-visible:ring-green-500 placeholder:text-green-900"
+                }`}
+                placeholder={
+                  errorMsg ||
+                  (isGameComplete ? "secure_channel_active" : "enter_code...")
+                }
                 autoComplete="off"
+                disabled={isGameComplete}
               />
             </div>
-            <Button
-              onClick={handleTerminalSubmit}
-              disabled={!team || team.is_finished}
-              className={`w-full text-black font-bold tracking-widest shadow-[0_0_15px_rgba(0,255,0,0.4)] transition-all active:scale-95 ${errorMsg ? "bg-red-600 hover:bg-red-500" : "bg-[#00ff00] hover:bg-green-500"}`}
-            >
-              {errorMsg ? "ERROR // RETRY" : "EXECUTE OVERRIDE"}
-            </Button>
+            {!isGameComplete && (
+              <Button
+                onClick={handleTerminalSubmit}
+                disabled={!team || team.is_finished}
+                className={`w-full text-black font-bold tracking-widest transition-all active:scale-95 ${errorMsg ? "bg-red-600 hover:bg-red-500 shadow-[0_0_15px_rgba(255,0,0,0.4)]" : "bg-[#00ff00] hover:bg-green-500 shadow-[0_0_15px_rgba(0,255,0,0.4)]"}`}
+              >
+                {errorMsg ? "ERROR // RETRY" : "EXECUTE OVERRIDE"}
+              </Button>
+            )}
+            {isGameComplete && (
+              <div className="text-center text-xs text-sky-500/60 font-mono animate-pulse">
+                System Secured. No further input required.
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -750,17 +825,23 @@ export default function UserDashboard() {
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            className="fixed right-4 bottom-6 z-40 rounded-full h-12 w-12 p-0 border-[#00ff00] bg-black text-[#00ff00] shadow-[0_0_20px_rgba(0,255,0,0.2)] hover:bg-green-900/20"
+            className={`fixed right-4 bottom-6 z-40 rounded-full h-12 w-12 p-0 shadow-lg transition-all hover:scale-105 ${isGameComplete ? "border-sky-500 bg-slate-900 text-sky-400 shadow-sky-900/40 hover:bg-sky-900/20" : "border-[#00ff00] bg-black text-[#00ff00] shadow-[0_0_20px_rgba(0,255,0,0.2)] hover:bg-green-900/20"}`}
           >
-            <Trophy className="w-5 h-5 text-yellow-400" />
+            <Trophy
+              className={`w-5 h-5 ${isGameComplete ? "text-sky-300" : "text-yellow-400"}`}
+            />
           </Button>
         </SheetTrigger>
         <SheetContent
           side="bottom"
-          className="h-[80vh] border-t-[#00ff00] bg-black/95 text-[#00ff00] p-0"
+          className={`h-[80vh] p-0 backdrop-blur-md ${isGameComplete ? "border-t-sky-500 bg-slate-900/95 text-sky-400" : "border-t-[#00ff00] bg-black/95 text-[#00ff00]"}`}
         >
-          <SheetHeader className="p-6 border-b border-green-900/50">
-            <SheetTitle className="text-[#00ff00] font-mono flex items-center gap-2">
+          <SheetHeader
+            className={`p-6 border-b ${isGameComplete ? "border-sky-900/50" : "border-green-900/50"}`}
+          >
+            <SheetTitle
+              className={`font-mono flex items-center gap-2 ${isGameComplete ? "text-sky-400" : "text-[#00ff00]"}`}
+            >
               <Users className="w-4 h-4" /> GLOBAL_RANKINGS
             </SheetTitle>
           </SheetHeader>
@@ -768,7 +849,7 @@ export default function UserDashboard() {
             {leaderboard.map((t, idx) => (
               <div
                 key={t.id}
-                className="flex justify-between border-b border-green-900/30 pb-2"
+                className={`flex justify-between border-b pb-2 ${isGameComplete ? "border-sky-900/30" : "border-green-900/30"}`}
               >
                 <span className="font-bold">
                   {idx + 1}. {t.team_name}
@@ -782,7 +863,7 @@ export default function UserDashboard() {
 
       {/* Scanner Overlay */}
       {showScanner && (
-        <div className="fixed inset-0 z-[60] bg-black flex flex-col items-center justify-center p-4">
+        <div className="fixed inset-0 z-60 bg-black flex flex-col items-center justify-center p-4">
           <Button
             variant="ghost"
             className="absolute top-4 right-4 text-green-500 hover:text-red-500 z-20"

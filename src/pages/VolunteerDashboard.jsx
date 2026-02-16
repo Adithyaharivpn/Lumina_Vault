@@ -41,7 +41,6 @@ export default function VolunteerDashboard() {
   const [passwordInput, setPasswordInput] = useState("");
   const [authError, setAuthError] = useState("");
 
-
   const [nodes, setNodes] = useState([]);
   const [teams, setTeams] = useState([]);
   const [selectedNode, setSelectedNode] = useState("1");
@@ -54,7 +53,7 @@ export default function VolunteerDashboard() {
 
   const handleAuth = (e) => {
     e.preventDefault();
-    if (passwordInput === "volunteer") {
+    if (btoa(passwordInput) === "TFZfRklBTERfQUdFTlQ=") {
       setIsAuthorized(true);
       sessionStorage.setItem("volunteer_auth", "true");
     } else {
