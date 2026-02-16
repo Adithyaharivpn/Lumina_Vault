@@ -10,8 +10,8 @@ import {
   Users,
   LogOut,
   Loader2,
-  QrCode,
   X,
+  QrCode,
 } from "lucide-react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,9 +26,133 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { toast } from "sonner";
-
 import { supabase } from "@/lib/supabaseClient";
 import WaitingScreen from "./WaitingScreen";
+
+function LockedVault({ team, onSuccess }) {
+  const [showInput, setShowInput] = useState(false);
+  const [vaultInput, setVaultInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const _CORE_HASH = "R09MREVOV0FMTEJSRUFDSEVE";
+  const decodedHash = atob(_CORE_HASH);
+
+  useEffect(() => {
+    console.clear();
+    console.log(
+      "%c SECURITY OVERRIDE CONSOLE",
+      "color: #00ff41; font-size: 20px; font-weight: bold;",
+    );
+  }, []);
+
+  const handleReveal = () => {
+    setShowInput(true);
+    console.log("UPLINK: Manual input field authorized.");
+  };
+
+  const checkKey = async () => {
+    setLoading(true);
+    setTimeout(async () => {
+      if (vaultInput.trim().toUpperCase() === decodedHash) {
+        setSuccess(true);
+        console.log(
+          "ALARM: Vault integrity compromised. Accessing main stage files...",
+        );
+        await onSuccess();
+      } else {
+        alert("INVALID KEY: Access denied. IP address logged.");
+        setLoading(false);
+      }
+    }, 1500);
+  };
+
+  if (success) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#0d0d0d] text-center p-6 relative overflow-hidden font-mono text-gold-500">
+        {/* Scanlines */}
+        <div className="absolute inset-0 pointer-events-none z-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-size-[100%_2px,3px_100%] bg-repeat" />
+
+        <div className="border-2 border-dashed border-yellow-400 p-8 animate-pulse text-yellow-400 z-20 bg-black/90 shadow-[0_0_50px_rgba(255,215,0,0.3)]">
+          <h2 className="text-3xl font-black mb-4 uppercase tracking-widest">
+            ACCESS GRANTED
+          </h2>
+          <p className="mb-2 text-lg">
+            The Digital Vault is open. Claim your prize at the Main Stage!
+          </p>
+          <p className="text-sm opacity-80 font-mono">TOKEN: #LM-2026-VLT</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0d0d0d] font-mono flex flex-col items-center justify-center p-4 relative overflow-hidden text-[#00ff41]">
+      {/* Scanlines Effect */}
+      <div className="absolute inset-0 pointer-events-none z-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-size-[100%_2px,3px_100%] bg-repeat" />
+
+      <div className="border-2 border-[#00ff41] p-12 shadow-[0_0_20px_#00ff41] bg-[rgba(0,20,0,0.9)] z-20 max-w-2xl w-full text-center">
+        <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-[5px] mb-8">
+          SYSTEM: LOCKED
+        </h1>
+        <p className="text-gray-500 mb-8 font-bold">
+          CRITICAL ERROR: Manual override button missing from DOM. Biometric
+          verification failed.
+        </p>
+
+        <div className="mb-8 border border-green-900/50 p-4 bg-black/50 text-xs font-mono text-left opacity-70">
+          <p className="text-green-400 mb-1">&gt;&gt; LATEST INTERCEPT:</p>
+          <p className="text-white tracking-widest">[ GOLDENWALLBREACHED ]</p>
+        </div>
+
+        <button
+          id="override-link"
+          onClick={handleReveal}
+          style={{
+            display: showInput ? "none" : "none",
+            backgroundColor: "#00ff41",
+            color: "black",
+            padding: "15px 30px",
+            textDecoration: "none",
+            fontWeight: "bold",
+            cursor: "pointer",
+            border: "none",
+            marginTop: "20px",
+            fontFamily: "monospace",
+          }}
+          className="hover:bg-white hover:shadow-[0_0_15px_#ffffff]"
+        >
+          INITIATE MANUAL OVERRIDE
+        </button>
+
+        {showInput && (
+          <div className="mt-8 border-t border-[#333] pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <p className="mb-4 font-bold tracking-widest">
+              ENTER FINAL BREACH COORDINATES:
+            </p>
+            <input
+              type="text"
+              id="vault-input"
+              value={vaultInput}
+              onChange={(e) => setVaultInput(e.target.value)}
+              placeholder="XXXXX-XXXXXXXXXXXXX"
+              autoComplete="off"
+              className="bg-black border border-[#00ff41] text-[#00ff41] p-3 w-full max-w-xs text-center text-xl outline-none mb-4 placeholder:text-green-900"
+            />
+            <br />
+            <button
+              onClick={checkKey}
+              disabled={loading}
+              className="bg-transparent text-[#00ff41] border border-[#00ff41] px-6 py-2 cursor-pointer transition-colors hover:bg-[#00ff41] hover:text-black font-bold uppercase tracking-widest disabled:opacity-50"
+            >
+              {loading ? "AUTHENTICATING..." : "EXECUTE UPLINK"}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -44,8 +168,14 @@ export default function UserDashboard() {
   const [errorMsg, setErrorMsg] = useState("");
   const [alertMsg, setAlertMsg] = useState("");
   const [missionAlert, setMissionAlert] = useState(null);
+
+  // Scanner State
   const [showScanner, setShowScanner] = useState(false);
   const [scanResult, setScanResult] = useState(null);
+
+  // Boot Sequence State
+  const [showBoot, setShowBoot] = useState(false);
+  const [bootProgress, setBootProgress] = useState(0);
 
   useEffect(() => {
     if (!team?.id) return;
@@ -63,13 +193,11 @@ export default function UserDashboard() {
   useEffect(() => {
     const initGame = async () => {
       const storedTeamId = localStorage.getItem("team_id");
-
       if (!storedTeamId || storedTeamId === "undefined") {
         localStorage.clear();
         navigate("/login");
         return;
       }
-
       await Promise.all([
         fetchTeamData(storedTeamId),
         fetchNodes(),
@@ -111,7 +239,7 @@ export default function UserDashboard() {
 
   // Helpers
   const fetchTeamData = async (teamId) => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("teams")
       .select("*")
       .eq("id", teamId)
@@ -120,33 +248,26 @@ export default function UserDashboard() {
   };
 
   const fetchNodes = async () => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("nodes")
       .select("*")
       .order("id", { ascending: true });
-
-    if (error) {
-      console.error("Error fetching nodes:", error);
-    } else {
-      console.log("Nodes fetched:", data?.length, data);
-      if (data) setNodes(data);
-    }
+    if (data) setNodes(data);
   };
 
   const fetchLeaderboard = async () => {
     const { data } = await supabase
       .from("teams")
       .select("*")
-      .order("current_node", { ascending: false })
+      .order("score", { ascending: false })
       .order("last_solved_at", { ascending: true });
     if (data) setLeaderboard(data);
   };
 
-  //Timer
+  // Timer
   useEffect(() => {
     const calculateTime = () => {
       if (!team?.start_time) return;
-
       const startTime = new Date(team.start_time).getTime();
       const durationSeconds = (team.duration_minutes || 60) * 60;
 
@@ -162,7 +283,6 @@ export default function UserDashboard() {
         setTimeLeft(remaining);
       }
     };
-
     calculateTime();
     const timer = setInterval(calculateTime, 1000);
     return () => clearInterval(timer);
@@ -187,152 +307,132 @@ export default function UserDashboard() {
     return `${h}:${m}:${s}`;
   };
 
-  // Mission Messages
-  const getSuccessMessage = (nodeId) => {
-    switch (nodeId) {
-      case 1:
-        return "UPLINK STABLE. Primary Coordinate acquired: [50]. Proceed to Cyber Security Lab for Round 2: Breach Defense.";
-      case 2:
-        return "THREATS NEUTRALIZED. Access granted. Locate the physical marker in the restricted zone to find the Secondary Coordinate.";
-      case 3:
-        return "COORDINATES RECIEVED. Proceed immediately to Room for Round 4: The Phishing Net.";
-      case 4:
-        return "SECURITY BYPASSED. Password HACKD accepted. The 'Logic Gate' directory is now unzipped on local terminals. Begin Round 5.Use Password to unlock the folder";
-      case 5:
-        return "FIREWALL COLLAPSED. Phrase 'WALL BREACHED' confirmed. Use the Phrase to Unlock The Next Folder.";
-      case 6:
-        return "SYSTEM CONTROLLED. THE VAULT IS OPEN. YOU HAVE DOMINATED THE GRID.GO TO ROOM 505";
-      default:
-        return "NODE SECURED. UPLINK ESTABLISHED.";
-    }
-  };
-
-  // QR Scanner Effect
+  // QR Scanner Logic
   useEffect(() => {
     if (showScanner && !scanResult) {
-      // Small delay to ensure DOM is ready
       const timer = setTimeout(() => {
         const scanner = new Html5QrcodeScanner(
           "reader",
-          { fps: 10, qrbox: { width: 300, height: 300 } },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
           false,
         );
 
         scanner.render(
-          async (decodedText) => {
-            // Stop scanning immediately
+          (decodedText) => {
             scanner.clear();
-
-            try {
-              // Call the backend to check limits
-              const { data, error } = await supabase.rpc("log_scan", {
-                p_team_id: team.id,
-                p_qr_code: decodedText,
-              });
-
-              if (error) {
-                // If the error is our custom limit reached error
-                if (error.message.includes("LIMIT_REACHED")) {
-                  setErrorMsg("ACCESS_DENIED: MAX TEAMS REACHED");
-                  setTimeout(() => setErrorMsg(""), 3000);
-                  toast.error("Node Limit Reached", {
-                    description:
-                      "This node has already been claimed by 5 teams.",
-                  });
-                } else {
-                  console.error("Scan log error:", error);
-                  toast.error("Scan Error", {
-                    description: "Could not verify scan. Please try again.",
-                  });
-                }
-                setShowScanner(false);
-                return;
-              }
-
-              // Success!
-              setScanResult(decodedText);
-              toast.success("Scan Verified", {
-                description: "Uplink established securely.",
-              });
-            } catch (err) {
-              console.error("Unexpected scan error:", err);
-              toast.error("System Error", {
-                description: "Critical failure in scan verification.",
-              });
-              setShowScanner(false);
-            }
+            setScanResult(decodedText);
+            setTerminalInput(decodedText);
+            setShowScanner(false);
+            toast.success("DATA EXTRACTED", {
+              description: "Sequence loaded into terminal.",
+            });
           },
-          (error) => {
-            // console.warn(error);
-          },
+          () => {},
         );
-
-        // Store cleanup
-        return () => {
-          scanner
-            .clear()
-            .catch((error) => console.log("Failed to clear scanner."));
-        };
+        return () => scanner.clear().catch(console.error);
       }, 100);
-
       return () => clearTimeout(timer);
     }
   }, [showScanner, scanResult]);
 
-  //Game Logic
+  // --- NARRATIVE & LOGIC ---
+
+  const getSuccessMessage = (nodeId) => {
+    switch (nodeId) {
+      case 1:
+        return ">> UPLINK ESTABLISHED. Coordinate secured.";
+      case 2:
+        return ">> SIGNAL LOCKED. Chromatic spectrum matched. Access granted.";
+      case 3:
+        return ">> GRID SYNCED. Digit acquired. Combining data fragments...";
+      case 4:
+        return ">> PASSWORD ACCEPTED. Directory 'Logic Gate' unzipped.";
+      case 5:
+        return ">> FIREWALL DESTROYED. Data Stream Decrypted: [ PASSWORD: GOLDENWALLBREACHED ]. Final Level Unlocked.";
+      case 6:
+        return ">> MASTER KEY ACCEPTED. THE VAULT IS OPEN. Report to Room 505.";
+      default:
+        return ">> ENCRYPTION BYPASSED. NODE SECURE. PROCEED TO NEXT COORDINATE.";
+    }
+  };
+
   const handleTerminalSubmit = async (e) => {
-    e.preventDefault();
-    if (!team || terminalInput.trim() === "" || overrideProgress > 0) return;
+    if (e) e.preventDefault();
+    if (!team || !terminalInput.trim() || overrideProgress > 0) return;
 
-    setErrorMsg("");
-    const currentNode = nodes.find((n) => n.id === team.current_node);
+    const currentNodeId = team.current_node;
+    const input = terminalInput.trim().toUpperCase();
+    let isCorrect = false;
 
-    if (!currentNode) {
-      console.error("Node not found for team.current_node:", team.current_node);
-      setErrorMsg("NODE_ERROR");
-      return;
+    // --- SECURITY: Simple Base64 Obfuscation ---
+    // Answers are encoded to prevent casual reading (inspect element).
+
+    const verifyAnswer = (input, targetEncoded) => {
+      const targets = Array.isArray(targetEncoded)
+        ? targetEncoded
+        : [targetEncoded];
+      // Check if any target decodes to the input
+      return targets.some((encoded) => {
+        try {
+          return atob(encoded) === input;
+        } catch (e) {
+          return false;
+        }
+      });
+    };
+
+    const answerMap = {
+      1: ["NTA="], // "50"
+      2: [
+        "QkxVRQ==", // BLUE
+        "UElOSw==", // PINK
+        "R09MRA==", // GOLD
+        "R1JBWQ==", // GRAY
+        "Q1lBTg==", // CYAN
+      ],
+      3: ["Mg=="], // "2"
+      4: ["SEFDS0Q="], // "HACKD"
+      5: ["V0FMTEJSRUFDSEVE"], // "WALLBREACHED"
+      6: ["R09MREVOV0FMTEJSRUFDSEVE"], // "GOLDENWALLBREACHED"
+    };
+
+    const targetEncoded = answerMap[currentNodeId];
+    if (targetEncoded) {
+      isCorrect = verifyAnswer(input, targetEncoded);
+    } else {
+      isCorrect = false;
     }
 
-    console.log(
-      `Attempting Override - Input: "${terminalInput}" | Target: "${currentNode.correct_key}" | NodeID: ${currentNode.id}`,
-    );
-
-    const userInput = terminalInput.trim().toUpperCase();
-
-    // Check if it's an array (multiple answers) or a single string
-    const isCorrect = Array.isArray(currentNode.correct_key)
-      ? currentNode.correct_key.some((key) => key.toUpperCase() === userInput)
-      : currentNode.correct_key?.toUpperCase() === userInput;
-
     if (isCorrect) {
-      const completedNodeId = team.current_node;
-      setMissionAlert(getSuccessMessage(completedNodeId));
+      const nextNodeId = currentNodeId + 1;
+      const isFinishingMove = currentNodeId >= 6;
 
-      const nextNodeId = team.current_node + 1;
-      const isFinished = nextNodeId > nodes.length;
+      setMissionAlert(getSuccessMessage(currentNodeId));
+      setOverrideProgress(100);
+      setTerminalInput("");
+
+      setTeam((prev) => ({
+        ...prev,
+        current_node: isFinishingMove ? prev.current_node : nextNodeId,
+        score: (prev.score || 0) + 100,
+        is_finished: isFinishingMove,
+      }));
+
+      setTimeout(() => setOverrideProgress(0), 2000);
 
       const updates = {
-        current_node: isFinished ? team.current_node : nextNodeId,
+        current_node: isFinishingMove ? currentNodeId : nextNodeId,
         score: (team.score || 0) + 100,
         last_solved_at: new Date().toISOString(),
-        is_finished: isFinished,
+        is_finished: isFinishingMove,
       };
 
       const { error } = await supabase
         .from("teams")
         .update(updates)
         .eq("id", team.id);
-
-      if (error) {
-        console.error("Supabase update error:", error);
-        setErrorMsg("UPLINK_ERROR");
-      } else {
-        setOverrideProgress(100);
-        setTerminalInput("");
-        setTimeout(() => setOverrideProgress(0), 2000);
-      }
+      if (error) toast.error("Network Error - Sync Pending");
     } else {
-      console.log("Incorrect key entered.");
       setErrorMsg("ACCESS_DENIED");
       setTimeout(() => setErrorMsg(""), 2000);
     }
@@ -346,26 +446,12 @@ export default function UserDashboard() {
     return "locked";
   };
 
-  const totalLevels = nodes.length || 5;
-  const currentLevel = team?.is_finished
-    ? totalLevels
-    : (team?.current_node || 1) - 1;
-  const globalProgress = Math.round((currentLevel / totalLevels) * 100);
-
-  const [showBoot, setShowBoot] = useState(false);
-  const [bootProgress, setBootProgress] = useState(0);
-
   useEffect(() => {
     if (team?.start_time) {
       setShowBoot(true);
       setBootProgress(0);
-
-      // Start progress animation
       const progressTimer = setTimeout(() => setBootProgress(100), 100);
-
-      // End boot sequence
       const timer = setTimeout(() => setShowBoot(false), 2500);
-
       return () => {
         clearTimeout(timer);
         clearTimeout(progressTimer);
@@ -373,25 +459,48 @@ export default function UserDashboard() {
     }
   }, [team?.start_time]);
 
+  // -- RENDER HELPERS --
+  const totalLevels = 6;
+  const currentLevel = team?.is_finished
+    ? totalLevels
+    : (team?.current_node || 1) - 1;
+  const globalProgress = Math.min(
+    100,
+    Math.round((currentLevel / totalLevels) * 100),
+  );
+
   if (loading)
     return (
-      <div className="bg-black min-h-screen text-green-500 font-mono flex flex-col items-center justify-center p-10">
+      <div className="bg-black min-h-screen text-[#00ff00] font-mono flex flex-col items-center justify-center p-10">
         <Loader2 className="w-12 h-12 animate-spin mb-4" />
         <span className="animate-pulse tracking-widest">CONNECTING...</span>
       </div>
     );
 
-  if (team && !team.start_time) {
-    return <WaitingScreen />;
+  if (team && !team.start_time) return <WaitingScreen />;
+
+  if (team && team.current_node >= 6 && !team.is_finished) {
+    return (
+      <LockedVault
+        team={team}
+        onSuccess={() => {
+          const finishGame = async () => {
+            const updates = {
+              is_finished: true,
+              last_solved_at: new Date().toISOString(),
+            };
+            await supabase.from("teams").update(updates).eq("id", team.id);
+            setTeam((prev) => ({ ...prev, is_finished: true }));
+          };
+          finishGame();
+        }}
+      />
+    );
   }
 
   if (showBoot) {
     return (
-      <div className="min-h-screen bg-black text-green-500 font-mono flex flex-col items-center justify-center p-6 z-50 fixed inset-0 overflow-hidden">
-        {/* CRT Overlay */}
-        <div className="absolute inset-0 z-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-size-[100%_4px,3px_100%] bg-repeat pointer-events-none" />
-        <div className="absolute inset-0 pointer-events-none z-10 bg-[radial-gradient(circle,rgba(0,0,0,0)_0%,rgba(0,0,0,0.4)_100%)]" />
-
+      <div className="min-h-screen bg-black text-[#00ff00] font-mono flex flex-col items-center justify-center p-6 z-50 fixed inset-0 overflow-hidden">
         <div className="max-w-md w-full space-y-8 relative z-20">
           <div className="h-2 w-full bg-green-900/30 rounded-full overflow-hidden border border-green-900/50">
             <div
@@ -399,41 +508,8 @@ export default function UserDashboard() {
               style={{ width: `${bootProgress}%` }}
             />
           </div>
-
-          <div className="space-y-2 font-mono text-xs text-green-400/80">
-            <div className="flex justify-between items-center text-green-600">
-              <span>KERNEL_PANIC_PROTECTION...</span>
-              <span>ACTIVE</span>
-            </div>
-            <div className="h-px w-full bg-green-900/20 my-2" />
-            <div className="flex justify-between">
-              <span>{">"} ESTABLISHING SECURE HANDSHAKE</span>
-              <span className="text-green-400 font-bold">OK</span>
-            </div>
-            <div className="flex justify-between opacity-0 animate-[fadeIn_0.5s_ease-out_0.5s_forwards]">
-              <span>{">"} VERIFYING ENCRYPTION KEYS</span>
-              <span className="text-green-400 font-bold">OK</span>
-            </div>
-            <div className="flex justify-between opacity-0 animate-[fadeIn_0.5s_ease-out_1s_forwards]">
-              <span>{">"} LOADING MISSION PARAMETERS</span>
-              <span className="text-green-400 font-bold">LOADED</span>
-            </div>
-            <div className="flex justify-between opacity-0 animate-[fadeIn_0.5s_ease-out_1.5s_forwards]">
-              <span>{">"} INITIALIZING INTERFACE...</span>
-              <span className="animate-pulse bg-green-500 h-2 w-2 block rounded-none" />
-            </div>
-          </div>
-
-          <div className="relative pt-8 text-center">
-            <h1
-              className="text-5xl font-black tracking-tighter translate-y-4 opacity-0 animate-[slideUp_0.3s_ease-out_2s_forwards] glitch relative inline-block text-white"
-              data-text="ACCESS_GRANTED"
-            >
-              ACCESS<span className="text-green-500">_GRANTED</span>
-            </h1>
-            <p className="text-[10px] text-green-600 mt-2 opacity-0 animate-[fadeIn_0.5s_ease-out_2.2s_forwards] uppercase tracking-[0.3em]">
-              Welcome back, Operative
-            </p>
+          <div className="text-center animate-pulse text-xs tracking-widest">
+            SYSTEM_BOOT_SEQUENCE_INITIATED...
           </div>
         </div>
       </div>
@@ -441,25 +517,38 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-green-500 font-mono overflow-x-hidden relative selection:bg-green-900/50">
+    <div className="min-h-screen bg-black text-[#00ff00] font-mono overflow-x-hidden relative selection:bg-green-900/50">
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/90 border-b border-green-900/50 backdrop-blur-sm p-4 flex justify-between items-center shadow-[0_0_15px_rgba(0,255,0,0.1)]">
         <div className="flex items-center gap-2">
           <div className="flex gap-0.5 items-end h-5">
             {[1, 2, 3, 4].map((bar) => (
               <div
                 key={bar}
-                className={`w-1 bg-green-500 transition-all duration-300 ${signalStrength >= bar ? "opacity-100" : "opacity-20"}`}
+                className={`w-1 bg-[#00ff00] transition-all duration-300 ${signalStrength >= bar ? "opacity-100" : "opacity-20"}`}
                 style={{ height: `${bar * 25}%` }}
               />
             ))}
           </div>
-
           <span className="text-xs font-bold animate-pulse text-green-400">
             NET_UPLINK
           </span>
         </div>
-
         <div className="flex items-center gap-4">
+          {/* SCANNER BUTTON in Header - ONLY FOR NODE 3 */}
+          {team?.current_node === 3 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setShowScanner(true);
+                setScanResult(null);
+              }}
+              className="text-[#00ff41] border border-[#00ff41] hover:bg-[#00ff41] hover:text-black h-8 w-8 p-0 rounded-full animate-pulse"
+            >
+              <QrCode className="w-4 h-4" />
+            </Button>
+          )}
+
           <Button
             variant="ghost"
             size="sm"
@@ -468,7 +557,6 @@ export default function UserDashboard() {
           >
             <LogOut className="w-3 h-3 mr-1" /> DISCONNECT
           </Button>
-
           <div
             className="text-xl font-bold tracking-widest text-red-500 glitch text-right"
             data-text={formatTime(timeLeft)}
@@ -476,7 +564,6 @@ export default function UserDashboard() {
             {formatTime(timeLeft)}
           </div>
         </div>
-
         <div className="text-right">
           <div className="text-[10px] text-green-700">TARGET</div>
           <div className="text-sm font-bold">
@@ -484,134 +571,152 @@ export default function UserDashboard() {
             {team?.current_node
               ? String(team.current_node).padStart(2, "0")
               : "--"}{" "}
-            / 05
+            / 06
           </div>
         </div>
       </header>
 
-      <main className="pt-24 pb-32 px-4 max-w-md mx-auto space-y-6 relative z-10">
+      <main className="pt-24 pb-32 px-4 w-full max-w-md md:max-w-4xl mx-auto space-y-6 relative z-10 transition-all duration-300">
         <div className="flex flex-col md:flex-row gap-4 items-stretch h-auto md:h-[400px]">
           {/* Vertical Progress (Desktop) */}
-          <div className="hidden md:flex w-12 flex-col items-center justify-between py-2 bg-black border border-green-900/30 rounded-full relative overflow-hidden group">
+          <div className="hidden md:flex w-12 flex-col items-center justify-between py-2 bg-black border border-green-900/30 rounded-full relative overflow-hidden">
             <div
-              className={`absolute inset-x-0 bottom-0 w-full transition-all duration-1000 ease-out bg-green-500/20`}
+              className="absolute inset-x-0 bottom-0 w-full bg-green-500/20"
               style={{ height: `${globalProgress}%` }}
             />
-            <div
-              className={`absolute inset-x-0 bottom-0 w-full transition-all duration-200 ease-out bg-green-500 mix-blend-overlay`}
-              style={{
-                height: `${overrideProgress}%`,
-                opacity: overrideProgress > 0 ? 1 : 0,
-              }}
-            />
-            {[...Array(10)].map((_, i) => (
-              <div key={i} className="w-4 h-px bg-green-900/50 z-10" />
-            ))}
-            <span className="absolute top-2 w-full text-center text-[10px] font-bold z-20 mix-blend-difference rotate-90 origin-center translate-y-8">
-              PROGRESS
-            </span>
             <span className="absolute bottom-4 w-full text-center text-xs font-bold z-20 text-green-400">
               {globalProgress}%
             </span>
           </div>
 
           {/* Horizontal Progress (Mobile) */}
-          <div className="flex md:hidden w-full h-8 items-center bg-black border border-green-900/30 rounded-full relative overflow-hidden">
+          <div className="flex md:hidden w-full h-10 items-center bg-black border border-green-900/50 rounded-full relative overflow-hidden mb-6 mt-6 shrink-0 shadow-[0_0_10px_rgba(0,255,0,0.1)]">
             <div
-              className="absolute inset-y-0 left-0 h-full bg-green-500/20 transition-all duration-1000 ease-out"
+              className="absolute inset-y-0 left-0 h-full bg-green-600/30 transition-all duration-1000 ease-out z-0"
               style={{ width: `${globalProgress}%` }}
             />
-            <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-green-500">
+            <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-green-400 z-10 drop-shadow-md">
               PROGRESS: {globalProgress}%
             </div>
           </div>
 
-          {/* Nodes Grid */}
+          {/* Nodes Grid - Filtered */}
           <div className="flex-1 space-y-3 overflow-y-auto pr-1 scrollbar-hide">
-            {nodes.length === 0 && (
-              <div className="text-xs text-green-900">
-                Scanning network topology...
-              </div>
-            )}
-
-            {nodes.map((node) => {
-              const status = getNodeStatus(node.id);
-              return (
-                <Card
-                  key={node.id}
-                  className={`
-                      border-l-4 transition-all duration-300 backdrop-blur-md text-inherit
-                      ${
-                        status === "active"
-                          ? "border-green-500 bg-green-950/10 shadow-[0_0_20px_rgba(0,255,0,0.1)] border-t-0 border-r-0 border-b-0"
-                          : status === "completed"
-                            ? "border-green-800/50 bg-black opacity-60 border-t-0 border-r-0 border-b-0"
-                            : "border-red-900/40 bg-red-950/20 opacity-80 border-t-0 border-r-0 border-b-0"
-                      }
-                    `}
-                >
-                  <CardContent className="p-3 flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        {status === "locked" && (
-                          <Lock className="w-3 h-3 text-red-500" />
-                        )}
-                        {status === "active" && (
-                          <Zap className="w-3 h-3 text-yellow-400 animate-pulse" />
-                        )}
-                        {status === "completed" && (
-                          <CheckCircle className="w-3 h-3 text-green-400" />
-                        )}
-                        <span
-                          className={`text-sm font-bold ${status === "completed" ? "line-through text-green-700" : ""}`}
-                        >
-                          {node.node_name ||
-                            `NODE ${String(node.id).padStart(2, "0")}`}
+            {nodes
+              .filter((node) => node.id <= (team?.current_node || 1))
+              .map((node) => {
+                const status = getNodeStatus(node.id);
+                return (
+                  <Card
+                    key={node.id}
+                    className={`border-l-4 transition-all duration-300 backdrop-blur-md text-inherit ${status === "active" ? "border-[#00ff00] bg-green-950/10 shadow-[0_0_20px_rgba(0,255,0,0.1)] border-t-0 border-r-0 border-b-0" : "border-green-800/50 bg-black opacity-60 border-t-0 border-r-0 border-b-0"}`}
+                  >
+                    <CardContent className="p-3 flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          {status === "active" ? (
+                            <Zap className="w-3 h-3 text-yellow-400 animate-pulse" />
+                          ) : (
+                            <CheckCircle className="w-3 h-3 text-green-400" />
+                          )}
+                          <span
+                            className={`text-sm font-bold ${status === "completed" ? "line-through text-green-700" : ""}`}
+                          >
+                            {node.node_name ||
+                              `NODE ${String(node.id).padStart(2, "0")}`}
+                          </span>
+                        </div>
+                        <div className="text-xs text-green-600/80 uppercase">
+                          {node.location_hint || "Unknown"}
+                        </div>
+                      </div>
+                      {status === "completed" && (
+                        <span className="text-[10px] bg-green-900/30 text-green-400 px-1 py-0.5 border border-green-500/30 rounded">
+                          DECRYPTED
                         </span>
-                      </div>
-                      <div className="text-xs text-green-600/80 uppercase">
-                        {node.location_hint || "Unknown"}
-                      </div>
-                    </div>
-
-                    {status === "completed" && (
-                      <span className="text-[10px] bg-green-900/30 text-green-400 px-1 py-0.5 border border-green-500/30 rounded">
-                        STABLE
-                      </span>
-                    )}
-                    {status === "active" && (
-                      <div className="text-[10px] text-yellow-400 animate-pulse font-bold tracking-wider">
-                        Intercepting...
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
+                      )}
+                      {status === "active" && (
+                        <div className="text-[10px] text-yellow-400 animate-pulse font-bold tracking-wider">
+                          TARGET
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
           </div>
         </div>
 
+        {/* Level 4: Hidden Log Clue */}
+        {/* Level 4: Hidden Log Clue */}
+        {team?.current_node === 4 && (
+          <div className="bg-black border border-green-900/50 p-4 font-mono text-[10px] md:text-sm text-green-400 h-48 md:h-64 overflow-y-auto w-full mb-6 shadow-inner tracking-tight md:tracking-normal">
+            <div className="space-y-0.5 md:space-y-1">
+              <p>[0.0012] Initializing CPU... OK</p>
+              <p>[0.0015] Checking hypervisor status... None detected.</p>
+              <p>[0.0022] Setting up interrupt controllers...</p>
+              <p>[0.0045] Memory Check: 16GB Detected [DDR4 3200MHz]</p>
+              <p>[0.0055] Checking PCI Express slots... 4 devices found.</p>
+              <p>[0.0067] ACPI: Core revision 20220215</p>
+              <p>[0.0089] WARN: Unexpected Byte at 0x48 (Sector_1)</p>
+              <p>[0.0101] pci 0000:00:01.0: reg 0x10: [mem 0x0000-0x0fff]</p>
+              <p>[0.0122] Loading Kernel Modules: [kvm, virtio, sound_core]</p>
+              <p>[0.0135] vgaarb: setting as boot device</p>
+              <p>[0.0155] eth0: Link up, 1000Mbps, full duplex</p>
+              <p>[0.0177] SCSI subsystem initialized</p>
+              <p>[0.0198] ERROR: Buffer Overflow at 0x41 (Stack_Pointer)</p>
+              <p>[0.0211] usb 1-1: new high-speed USB device number 2</p>
+              <p>[0.0241] mounting /dev/sda1 on /boot... OK</p>
+              <p>
+                [0.0255] EXT4-fs (sda1): re-mounted. Opts: errors=remount-ro
+              </p>
+              <p>[0.0289] Initializing Security Protocol: [SHA-256 Enabled]</p>
+              <p>[0.0302] Adding 4194300k swap on /var/swap. Priority:-2</p>
+              <p>[0.0334] CRITICAL: Packet Intercept at 0x43 (Port_80)</p>
+              <p>[0.0355] random: crng init done</p>
+              <p>[0.0381] systemd[1]: Starting Network Time Sync...</p>
+              <p>[0.0401] systemd[1]: Detected architecture x86-64.</p>
+              <p>[0.0422] systemd[1]: Reached target Network.</p>
+              <p>[0.0444] Clocksource: tsc: mask: 0xffffffffffffffff</p>
+              <p>[0.0467] WARN: Metadata mismatch at 0x4B (Offset_04)</p>
+              <p>[0.0488] NET: Registered protocol family 10</p>
+              <p>[0.0511] Cleaning up temporary files... [DONE]</p>
+              <p>[0.0532] Scanning for logical volumes... 0 found.</p>
+              <p>[0.0556] systemd[1]: Starting Rotate log files...</p>
+              <p>[0.0577] audit: type=1400 audit(164491200.057:2): res=1</p>
+              <p>[0.0598] ALERT: Intrusion detected at 0x44 (Node_Primary)</p>
+              <p>
+                [0.0622] systemd[1]: Finished Flush Journal to Persistent
+                Storage.
+              </p>
+              <p className="animate-pulse">
+                [0.0644] Core Dumped. System Halted.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Interaction Panel */}
         <div
-          className={`border bg-black/80 p-4 rounded-sm shadow-lg backdrop-blur-md transition-colors duration-300 ${errorMsg ? "border-red-500/50 shadow-red-900/20" : "border-green-500/30"}`}
+          className={`border bg-black/80 p-4 rounded-sm shadow-lg backdrop-blur-md transition-colors duration-300 ${errorMsg ? "border-red-500/50 shadow-red-900/20" : "border-[#00ff00]/30"}`}
         >
-          <div className="flex items-center gap-2 mb-3 text-green-400 border-b border-green-900/50 pb-2">
+          <div className="flex items-center gap-2 mb-3 text-[#00ff00] border-b border-green-900/50 pb-2">
             <Terminal className="w-4 h-4" />
             <h3 className="text-sm font-bold tracking-wider">
               OVERRIDE_TERMINAL
             </h3>
           </div>
-
           <div className="space-y-4">
+            {/* Scanner Trigger inline - ONLY FOR NODE 3 */}
             {team?.current_node === 3 && (
               <Button
                 onClick={() => {
                   setShowScanner(true);
                   setScanResult(null);
                 }}
-                className="w-full bg-yellow-400/10 border border-yellow-400 text-yellow-400 hover:bg-yellow-400/20 font-bold tracking-widest flex items-center justify-center gap-2 mb-4 animate-pulse"
+                className="w-full bg-green-900/20 border border-green-700 text-green-400 hover:bg-green-800/30 h-8 text-xs font-mono tracking-widest mb-2 animate-pulse"
               >
-                <QrCode className="w-4 h-4" /> SCAN PHYSICAL CLUE
+                [ SCAN_PHYSICAL_ASSET ]
               </Button>
             )}
 
@@ -624,14 +729,15 @@ export default function UserDashboard() {
               <Input
                 value={terminalInput}
                 onChange={(e) => setTerminalInput(e.target.value)}
-                className={`pl-32 bg-black border-green-800 focus-visible:ring-green-500 font-mono h-10 ${errorMsg ? "text-red-500 border-red-800 focus-visible:ring-red-500" : "text-green-400 placeholder:text-green-900"}`}
+                className={`pl-32 bg-black border-green-800 focus-visible:ring-green-500 font-mono h-10 ${errorMsg ? "text-red-500 border-red-800 focus-visible:ring-red-500" : "text-[#00ff00] placeholder:text-green-900"}`}
                 placeholder={errorMsg || "enter_code..."}
+                autoComplete="off"
               />
             </div>
             <Button
               onClick={handleTerminalSubmit}
               disabled={!team || team.is_finished}
-              className={`w-full text-black font-bold tracking-widest shadow-[0_0_15px_rgba(0,255,0,0.4)] transition-all active:scale-95 ${errorMsg ? "bg-red-600 hover:bg-red-500" : "bg-green-600 hover:bg-green-500"}`}
+              className={`w-full text-black font-bold tracking-widest shadow-[0_0_15px_rgba(0,255,0,0.4)] transition-all active:scale-95 ${errorMsg ? "bg-red-600 hover:bg-red-500" : "bg-[#00ff00] hover:bg-green-500"}`}
             >
               {errorMsg ? "ERROR // RETRY" : "EXECUTE OVERRIDE"}
             </Button>
@@ -644,90 +750,39 @@ export default function UserDashboard() {
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            className="fixed right-4 bottom-6 z-40 rounded-full h-12 w-12 p-0 border-green-500 bg-black text-green-500 shadow-[0_0_20px_rgba(0,255,0,0.2)] hover:bg-green-900/20"
+            className="fixed right-4 bottom-6 z-40 rounded-full h-12 w-12 p-0 border-[#00ff00] bg-black text-[#00ff00] shadow-[0_0_20px_rgba(0,255,0,0.2)] hover:bg-green-900/20"
           >
             <Trophy className="w-5 h-5 text-yellow-400" />
           </Button>
         </SheetTrigger>
         <SheetContent
           side="bottom"
-          className="h-[80vh] border-t-green-500 bg-black/95 text-green-500 p-0"
+          className="h-[80vh] border-t-[#00ff00] bg-black/95 text-[#00ff00] p-0"
         >
           <SheetHeader className="p-6 border-b border-green-900/50">
-            <SheetTitle className="text-green-500 font-mono flex items-center gap-2">
+            <SheetTitle className="text-[#00ff00] font-mono flex items-center gap-2">
               <Users className="w-4 h-4" /> GLOBAL_RANKINGS
             </SheetTitle>
-            <SheetDescription className="text-green-800 font-mono text-xs">
-              REAL-TIME UPLINK ESTABLISHED
-            </SheetDescription>
           </SheetHeader>
           <div className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
-            {leaderboard.length === 0 ? (
-              <div className="text-center text-green-800 text-sm">
-                Waiting for uplink...
+            {leaderboard.map((t, idx) => (
+              <div
+                key={t.id}
+                className="flex justify-between border-b border-green-900/30 pb-2"
+              >
+                <span className="font-bold">
+                  {idx + 1}. {t.team_name}
+                </span>
+                <span>{t.score || 0} PTS</span>
               </div>
-            ) : (
-              leaderboard.map((t, idx) => (
-                <div
-                  key={t.id}
-                  className={`flex items-center justify-between p-3 border ${t.id === team?.id ? "border-green-500 bg-green-900/20" : "border-green-900/30"} rounded-sm`}
-                >
-                  <div className="flex items-center gap-4">
-                    <span
-                      className={`font-bold text-lg ${idx === 0 ? "text-yellow-400" : "text-green-700"}`}
-                    >
-                      {String(idx + 1).padStart(2, "0")}
-                    </span>
-                    <div className="flex flex-col">
-                      <span
-                        className={`font-bold text-sm ${t.id === team?.id ? "text-white" : "text-green-400"}`}
-                      >
-                        {t.team_name}
-                      </span>
-                      <span className="text-[10px] text-green-800">
-                        UPLINK_ID: {t.id.slice(0, 8)}...
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-mono font-bold">
-                      {t.score || 0} PTS
-                    </div>
-                    <div className="text-[10px] text-green-700">
-                      NODE {t.current_node}/5
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
+            ))}
           </div>
         </SheetContent>
       </Sheet>
 
       {/* Scanner Overlay */}
       {showScanner && (
-        <div className="fixed inset-0 z-70 bg-black flex flex-col items-center justify-center p-4">
-          {/* Custom Styles for Scanner Library Internals */}
-          <style>{`
-            #reader button {
-              background-color: transparent !important;
-              border: 1px solid #22c55e !important;
-              color: #22c55e !important;
-              padding: 10px 20px !important;
-              font-family: monospace !important;
-              text-transform: uppercase !important;
-              font-weight: bold !important;
-              cursor: pointer !important;
-              margin-top: 20px !important;
-            }
-            #reader button:hover {
-              background-color: rgba(34, 197, 94, 0.2) !important;
-            }
-            #reader__scan_region {
-               background: transparent !important;
-            }
-          `}</style>
-
+        <div className="fixed inset-0 z-[60] bg-black flex flex-col items-center justify-center p-4">
           <Button
             variant="ghost"
             className="absolute top-4 right-4 text-green-500 hover:text-red-500 z-20"
@@ -735,66 +790,36 @@ export default function UserDashboard() {
           >
             <X className="w-8 h-8" />
           </Button>
-
-          {!scanResult ? (
-            <div
-              id="reader"
-              className="w-full max-w-lg aspect-square bg-black border-2 border-green-500 rounded-lg overflow-hidden flex items-center justify-center shadow-[0_0_50px_rgba(34,197,94,0.3)]"
-            >
-              <div className="text-green-500 animate-pulse text-xs font-bold tracking-widest">
-                INITIALIZING SENSORS...
-              </div>
-            </div>
-          ) : (
-            <div className="max-w-sm w-full bg-black border border-green-500 p-6 space-y-4 shadow-[0_0_50px_rgba(0,255,0,0.2)]">
-              <div className="flex items-center gap-2 border-b border-green-900 pb-2">
-                <QrCode className="w-5 h-5 text-green-500" />
-                <h3 className="font-bold text-green-400 tracking-widest">
-                  DATA DECRYPTED
-                </h3>
-              </div>
-              <div className="bg-green-900/10 p-4 border border-green-500/30 rounded font-mono text-xl text-center text-green-300 break-all select-all">
-                {scanResult}
-              </div>
-              <Button
-                className="w-full bg-green-600 hover:bg-green-500 text-black font-bold"
-                onClick={() => {
-                  setShowScanner(false);
-                  setScanResult(null);
-                }}
-              >
-                CLOSE UPLINK
-              </Button>
-            </div>
-          )}
+          <div
+            id="reader"
+            className="w-full max-w-lg aspect-square bg-black border-2 border-green-500 rounded-lg overflow-hidden relative z-10"
+          ></div>
+          <div className="mt-4 text-green-500 font-mono animate-pulse">
+            ALIGN QR CODE WITHIN SENSORS
+          </div>
         </div>
       )}
 
-      {/* Mission Update Overlay */}
+      {/* Mission Update Modal */}
       {missionAlert && (
-        <div className="fixed inset-0 z-60 bg-black/95 flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div className="max-w-lg w-full border border-green-500 bg-black shadow-[0_0_50px_rgba(0,255,0,0.2)] p-1">
+        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="max-w-lg w-full border border-[#00ff00] bg-black shadow-[0_0_50px_rgba(0,255,0,0.3)] p-1">
             <div className="border border-green-900/50 p-6 space-y-6">
               <div className="flex items-center gap-3 border-b border-green-900/50 pb-4">
-                <Terminal className="w-6 h-6 text-green-500 animate-pulse" />
-                <h2
-                  className="text-xl font-black tracking-widest text-white glitch"
-                  data-text="MISSION_UPDATE"
-                >
+                <Terminal className="w-6 h-6 text-[#00ff00] animate-pulse" />
+                <h2 className="text-xl font-black tracking-widest text-white">
                   MISSION_UPDATE
                 </h2>
               </div>
-
-              <div className="font-mono text-green-400 text-sm leading-relaxed typing-effect">
+              <div className="font-mono text-[#00ff00] text-sm leading-relaxed whitespace-pre-line">
                 {missionAlert}
               </div>
-
               <div className="pt-4 flex justify-end">
                 <Button
                   onClick={() => setMissionAlert(null)}
-                  className="bg-green-600 text-black hover:bg-green-500 font-bold tracking-widest"
+                  className="bg-[#00ff00] text-black hover:bg-green-500 font-bold tracking-widest"
                 >
-                  ACKNOWLEDGE_TRANSMISSION
+                  ACKNOWLEDGE
                 </Button>
               </div>
             </div>
@@ -802,7 +827,7 @@ export default function UserDashboard() {
         </div>
       )}
 
-      {/* Floating System Alerts */}
+      {/* System Alerts */}
       {alertMsg && (
         <div className="fixed left-4 bottom-20 z-50 w-[90%] md:w-auto animate-in slide-in-from-bottom duration-300">
           <div className="flex items-center gap-3 bg-red-950/90 text-red-400 px-4 py-3 border border-red-500 rounded shadow-[0_0_30px_rgba(255,0,0,0.3)] backdrop-blur-md">
@@ -813,15 +838,6 @@ export default function UserDashboard() {
               </span>
               <span className="text-sm font-bold font-mono">{alertMsg}</span>
             </div>
-          </div>
-        </div>
-      )}
-
-      {!alertMsg && signalStrength < 2 && (
-        <div className="fixed left-4 bottom-6 z-30">
-          <div className="flex items-center gap-2 text-xs text-red-500 bg-black/80 px-3 py-1 border border-red-900/50 rounded-full animate-pulse">
-            <AlertTriangle className="w-3 h-3" />
-            <span>SIGNAL_UNSTABLE</span>
           </div>
         </div>
       )}
