@@ -343,9 +343,9 @@ export default function UserDashboard() {
   const getSuccessMessage = (nodeId) => {
     switch (nodeId) {
       case 1:
-        return ">> UPLINK ESTABLISHED. Coordinate secured.";
+        return ">> UPLINK ESTABLISHED. Coordinate secured.Procced to Room E303";
       case 2:
-        return ">> SIGNAL LOCKED. Chromatic spectrum matched. Access granted.";
+        return ">> SIGNAL LOCKED. Chromatic spectrum matched. Access granted.Locate the Grid";
       case 3:
         return ">> GRID SYNCED. Digit acquired. Combining data fragments...";
       case 4:
