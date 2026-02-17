@@ -353,10 +353,10 @@ export default function UserDashboard() {
       case 2:
         return ">> SIGNAL LOCKED. Chromatic spectrum matched. Access granted.Locate the Grid";
       case 3:
-        return ">> GRID SYNCED. Digit acquired. Combining data fragments...";
+        return ">> GRID SYNCED. Digit acquired. Combining data fragments...,USE PASSOWRD TO UNLOCK FOLDER";
       case 4:
         return ">> PASSWORD ACCEPTED. Directory 'LuminaVault' unzipped.";
-      case 5:
+      case 5: 
         return ">> FIREWALL DESTROYED. Decryption Complete.";
       case 6:
         return ">> MASTER KEY ACCEPTED. THE VAULT IS OPEN. FIND TABLE OF NIMA MISS.";
