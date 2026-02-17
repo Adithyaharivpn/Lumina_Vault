@@ -359,7 +359,7 @@ export default function UserDashboard() {
       case 5: 
         return ">> FIREWALL DESTROYED. Decryption Complete.";
       case 6:
-        return ">> MASTER KEY ACCEPTED. THE VAULT IS OPEN. FIND TABLE OF NIMA MISS.";
+        return ">> MASTER KEY ACCEPTED. THE VAULT IS OPEN. FIND THE TABLE OF NIMA MISS.";
       default:
         return ">> ENCRYPTION BYPASSED. NODE SECURE. PROCEED TO NEXT COORDINATE.";
     }
