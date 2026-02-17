@@ -355,11 +355,11 @@ export default function UserDashboard() {
       case 3:
         return ">> GRID SYNCED. Digit acquired. Combining data fragments...";
       case 4:
-        return ">> PASSWORD ACCEPTED. Directory 'Logic Gate' unzipped.";
+        return ">> PASSWORD ACCEPTED. Directory 'LuminaVault' unzipped.";
       case 5:
         return ">> FIREWALL DESTROYED. Decryption Complete.";
       case 6:
-        return ">> MASTER KEY ACCEPTED. THE VAULT IS OPEN. Report to Room 505.";
+        return ">> MASTER KEY ACCEPTED. THE VAULT IS OPEN. FIND TABLE OF NIMA MISS.";
       default:
         return ">> ENCRYPTION BYPASSED. NODE SECURE. PROCEED TO NEXT COORDINATE.";
     }
@@ -401,6 +401,12 @@ export default function UserDashboard() {
     } else {
       isCorrect = false;
     }
+
+    // Log the submission attempt
+    await supabase.from("system_logs").insert({
+      message: `[SUBMISSION] Team: ${team.team_name} | Node: ${currentNodeId} | Input: "${input}" | Result: ${isCorrect ? "SUCCESS" : "FAIL"}`,
+      type: isCorrect ? "success" : "alert",
+    });
 
     if (isCorrect) {
       const nextNodeId = currentNodeId + 1;
